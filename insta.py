@@ -71,7 +71,7 @@ class sin:
             return str(e)
 
 # --- إعداد واجهة Streamlit ---
-st.set_page_config(page_title="Dark Instagram Reporter", page_icon="💀", layout="centered")
+st.set_page_config(page_title="Dark Instagram Reporter", page_icon="GX1GX1", layout="centered")
 
 # CSS لإخفاء القوائم والأشرطة وإضافة التأثيرات
 st.markdown("""
@@ -133,13 +133,13 @@ st.markdown("""
 # إضافة الصورة التي طلبتها في الأعلى
 st.markdown(f'<img src="https://files.catbox.moe/qte6xo.jpg" class="header-img">', unsafe_allow_html=True)
 
-st.markdown("<h1>نظام البلاغات المظلم 💀</h1>", unsafe_allow_html=True)
+st.markdown("<h1>نظام البلاغات المظلم GX1GX1</h1>", unsafe_allow_html=True)
 
 # تهيئة الكائن
 OO = sin()
 
 # الحقول النصية
-user_id = st.text_input("أدخل يوزر الضحية (USER >> )", "")
+user_id = st.text_input("أدخل يوزر الضحية (USER  )", "")
 count_sessions = st.number_input("كم عدد Session IDs التي تريد إضافتها؟", min_value=1, step=1)
 
 session_list = []
@@ -148,9 +148,9 @@ for i in range(int(count_sessions)):
     if sid:
         session_list.append(sid)
 
-option = st.selectbox("اختر نوع العملية:", ["-- اختر --", "1- instagram report", "2- instagram lite report", "3- قناة المطور"])
+option = st.selectbox("اختر نوع العملية:", ["-- اختر --", "1- بلاغ انستكرام رسمـي ", "2- بلاغ انستكرام الايت", "علـش GX1GX1"])
 
-if st.button("بدء الهجوم 🧨"):
+if st.button("بدء الهجـوم "):
     if not user_id or not session_list:
         st.error("خطأ: يجب إدخال اليوزر وجلسة واحدة على الأقل!")
     elif option == "-- اختر --":
@@ -189,3 +189,4 @@ if st.button("بدء الهجوم 🧨"):
 
         except Exception as e:
             st.error(f"حدث خطأ مرعب: {e}")
+
