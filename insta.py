@@ -9,36 +9,78 @@ from os import path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from user_agent import generate_user_agent
 
-# --- إعداد واجهة التطبيق ---
+# --- إعداد واجهة التطبيق وحذف شعارات المنصة ---
 st.set_page_config(page_title="GX1 DARK PROTOCOL", page_icon="💀", layout="wide")
 
-# تصميم الثيم الأسود والأحمر
+# CSS لإضافة العناكب المتحركة والإطار المرعب وإخفاء القوائم الافتراضية
 st.markdown("""
     <style>
-    .stApp { background-color: #000000; color: #ff0000; font-family: 'Courier New', Courier, monospace; }
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
-        background-color: #050505 !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
+    /* إخفاء شعارات Streamlit وهيدر الصفحة */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
+    /* خلفية التطبيق مع تأثير خيوط العنكبوت */
+    .stApp {
+        background-color: #000000;
+        background-image: url('https://www.transparenttextures.com/patterns/spider-web.png');
+        background-attachment: fixed;
+        color: #ff0000;
+        font-family: 'Courier New', Courier, monospace;
     }
-    .stButton>button { width: 100%; border: 2px solid #ff0000; background-color: #000000; color: #ff0000; font-weight: bold; }
-    label { color: #ffffff !important; }
+    
+    /* أنيميشن العناكب الحمراء المتحركة في الخلفية */
+    @keyframes spider-move {
+        from { background-position: 0 0; }
+        to { background-position: 800px 800px; }
+    }
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: url('https://upload.wikimedia.org/wikipedia/commons/d/d2/Red_Spider_Icon.png') repeat;
+        background-size: 70px;
+        opacity: 0.08;
+        z-index: -1;
+        animation: spider-move 60s linear infinite;
+    }
+
+    /* إطار مرعب للصورة الهيدر */
+    .horror-border {
+        border: 12px solid #330000;
+        padding: 10px;
+        box-shadow: 0 0 35px #ff0000;
+        background-color: #000;
+        border-radius: 5px;
+    }
+
+    /* تنسيق المدخلات */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
+        background-color: #0a0a0a !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
+    }
+    .stButton>button { 
+        width: 100%; border: 2px solid #ff0000; background-color: #000000; color: #ff0000; 
+        font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
+    }
+    label { color: #ffffff !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- الكود الأصلي (بدون حذف حرف واحد) ---
+# --- الكود الأصلي المحفوظ بالكامل ---
 
-R = "\033[1;31m" # احمر
-G = "\033[1;32m" # اخضر
-Y = "\033[1;33m" # اصفر
-B = "\033[1;34m" # ازرق
-C = "\033[1;97m"  # ابيض
-rest = "\033[0m"  # استرجاع اللون الى الون الاصلي
+R = "\033[1;31m" 
+G = "\033[1;32m" 
+Y = "\033[1;33m" 
+B = "\033[1;34m" 
+C = "\033[1;97m"  
+rest = "\033[0m"  
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def blink_ascii(sd):
     art = sd + """gx1gx1"""
-    # محاكاة الوميض في الويب عبر st.empty
     return art
 
 def print_green(msg):
@@ -51,9 +93,6 @@ def print_white(msg):
     st.write(f"{msg}")
 
 def print_option(number, text):
-    return f"[{number}] {text}"
-
-def print_exit_option(number, text):
     return f"[{number}] {text}"
 
 def format_proxy(proxy):
@@ -90,7 +129,7 @@ def check_proxies_concurrently(proxy_list):
 
 expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
 
-# --- قائمة الأجهزة (50 جهاز كاملة كما هي) ---
+# --- قائمة الأجهزة (50 جهاز كاملة) ---
 devices = [
     {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
     {"reporter_id": "27568146", "device_id": "7008218736944907778"},
@@ -191,13 +230,19 @@ def get_target_id(username):
         return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
     except: return None
 
-# --- واجهة الإدخال والتشغيل ---
+# --- واجهة الإدخال والتشغيل الجديدة ---
 
-st.image("https://files.catbox.moe/8z2xdh.jpg")
-st.code("علـش @GX1GX1")
+# عرض الصورة داخل الإطار المرعب
+st.markdown('<div class="horror-border">', unsafe_allow_html=True)
+st.image("https://files.catbox.moe/8z2xdh.jpg", use_column_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# طلب البيانات كما في main()
-st.subheader(" إعدادات الهجوم")
+# رابط قناة التليجرام بشكل واضح
+st.markdown("<h2 style='text-align: center; color: #ff0000;'>قناتي تليجرام: <a href='https://t.me/gx1gx1' style='color: #00ff00;'>gx1gx1</a></h2>", unsafe_allow_html=True)
+st.code("علـش @GX1GX1", language="text")
+
+# إعدادات الهجوم
+st.subheader("💀 إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
 report_menu = {
@@ -210,10 +255,10 @@ report_menu = {
 selected_report = st.selectbox("⚠ اختر نوع البلاغ:", list(report_menu.keys()))
 option = report_menu[selected_report]
 
-sessions_raw = st.text_area(" ألصق السيزنات هنا:")
-proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري):")
+sessions_raw = st.text_area("🔑 ألصق السيزنات هنا (كل سطر سيزن):")
+proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري):")
 
-if st.button("بدأ الهــجوم"):
+if st.button("🔥 بدأ الهــجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
@@ -231,7 +276,7 @@ if st.button("بدأ الهــجوم"):
             else:
                 st.success(f"تم العثور على {len(valid_sessions)} سيزن صالح.")
                 
-                # منطقة النتائج
+                # منطقة النتائج (Terminal)
                 success_count = 0
                 fail_count = 0
                 terminal = st.empty()
@@ -246,5 +291,5 @@ if st.button("بدأ الهــجوم"):
                         else:
                             fail_count += 1
                             
-                        terminal.code(f"Success: {success_count} | Failed: {fail_count}\nTarget: {target_id}")
+                        terminal.code(f"⚡ [GX1 DARK PROTOCOL RUNNING]\nSUCCESS: {success_count} | FAILED: {fail_count}\nTARGET_ID: {target_id}")
                         time.sleep(2)
