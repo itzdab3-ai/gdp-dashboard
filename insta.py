@@ -245,17 +245,17 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #ff0000;'>قناتي تليجرام: <a href='https://t.me/gx1gx1' style='color: #00ff00;'>gx1gx1</a></h2>", unsafe_allow_html=True)
 st.code("علـش @GX1GX1", language="text")
 
-st.subheader("💀 إعدادات الهجوم")
+st.subheader(" إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
 menu_options = show_menu()
-selected_label = st.selectbox("⚠ اختر نوع البلاغ:", list(menu_options.keys()))
+selected_label = st.selectbox("👾 اختر نوع البلاغ:", list(menu_options.keys()))
 option = menu_options[selected_label]
 
-sessions_raw = st.text_area("🔑 ألصق السيزنات هنا (كل سطر سيزن):")
+sessions_raw = st.text_area(" ألصق السيزنات هنا (كل سطر سيزن):")
 proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري - gx1gx1.txt):")
 
-if st.button("🔥 بدأ الهــجوم"):
+if st.button(" بدأ الهــجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
