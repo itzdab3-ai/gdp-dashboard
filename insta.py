@@ -9,31 +9,44 @@ from os import path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from user_agent import generate_user_agent
 
-# --- إعدادات الواجهة الرسومية ---
-st.set_page_config(page_title="GX1 DARK PROTOCOL", page_icon="💀", layout="centered")
+# --- إعدادات Streamlit للظهور كـ Terminal مخيف ---
+st.set_page_config(page_title="GX1 DARK PROTOCOL", layout="wide")
 
-# تصميم الألوان الأصلي الخاص بك (أحمر، أخضر، أسود)
 st.markdown("""
     <style>
     .stApp { background-color: #000000; color: #ff0000; font-family: 'Courier New', Courier, monospace; }
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
-        background-color: #050505 !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
-    }
-    .stButton>button { width: 100%; border: 2px solid #ff0000; background-color: #000000; color: #ff0000; font-weight: bold; height: 3em; }
-    .stButton>button:hover { background-color: #ff0000; color: #000000; border: 2px solid #ffffff; }
-    label { color: #ffffff !important; font-size: 1.1rem; }
+    pre { color: #00ff00 !important; background-color: #050505 !important; border: 1px solid #ff0000 !important; }
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea { background-color: #000 !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; }
+    .stButton>button { background-color: #ff0000; color: white; width: 100%; font-weight: bold; border-radius: 0px; }
     </style>
     """, unsafe_allow_html=True)
 
-# عرض البانر
-st.markdown(f"""
-    <div style="border: 4px solid #ff0000; padding: 10px; border-radius: 15px; text-align: center; background-color: #050505; margin-bottom: 20px;">
-        <h1 style="color: #ff0000; text-shadow: 2px 2px #550000;">💀 GX1 - DARK PROTOCOL 💀</h1>
-        <p style="color: #00ff00;">الحالة: جاهز لتنفيذ الأوامر</p>
-    </div>
-    """, unsafe_allow_html=True)
+# --- [بداية الكود الأصلي - لا حذف ولا اختصار] ---
 
-# --- [ الكود الكبير ] قائمة الأجهزة (50 جهاز - كاملة بدون حذف سطر واحد) ---
+# دوال الألوان الأصلية
+R = "\033[1;31m" # احمر
+G = "\033[1;32m" # اخضر
+Y = "\033[1;33m" # اصفر
+B = "\033[1;34m" # ازرق
+C = "\033[1;97m"  # ابيض
+rest = "\033[0m"  # استرجاع اللون
+
+def clear_screen():
+    # في الويب سنقوم بمحاكاة المسح عبر حاوية
+    pass
+
+def blink_ascii(sd):
+    art = sd + """gx1gx1"""
+    # محاكاة في الويب
+    return art
+
+def print_option(number, text):
+    return f" [ {number} ] {text} "
+
+def print_exit_option(number, text):
+    return f" [ {number} ] {text} "
+
+# قائمة الأجهزة (50 جهاز - كاملة كما هي)
 devices = [
     {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
     {"reporter_id": "27568146", "device_id": "7008218736944907778"},
@@ -87,7 +100,6 @@ devices = [
     {"reporter_id": "7242379992225940494", "device_id": "7449373206865561103"}
 ]
 
-# --- قائمة الدول (50 دولة كاملة بدون حذف) ---
 countries = [
     "SA", "US", "GB", "CA", "AU", "DE", "FR", "IT", "ES", "BR",
     "RU", "CN", "JP", "KR", "IN", "ID", "TR", "NL", "SE", "NO",
@@ -96,32 +108,12 @@ countries = [
     "CL", "CO", "PE", "ZA", "EG", "NG", "KE", "MA", "DZ", "AE"
 ]
 
-expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
-
-# --- جميع الدوال الأصلية والاتصالات (بدون حذف أو اختصار) ---
-
 def format_proxy(proxy):
     proxy = proxy.strip()
     if not (proxy.startswith("http://") or proxy.startswith("https://") or
             proxy.startswith("socks5://") or proxy.startswith("socks4://")):
         return "http://" + proxy
     return proxy
-
-def validate_session(session):
-    check_url = ('https://api16-normal-c-alisg.tiktokv.com/passport/account/info/v2/'
-                 '?scene=normal&aid=1233&device_platform=android&version_code=200705')
-    headers = {'User-Agent': generate_user_agent(), 'Cookie': 'sessionid=' + session}
-    try:
-        resp = requests.get(check_url, headers=headers, timeout=5)
-        return 'user_id' in resp.text and "expired" not in resp.text
-    except: return False
-
-def get_target_id(username):
-    headers = {'User-Agent': generate_user_agent(), 'Host': 'www.tiktok.com'}
-    try:
-        req = requests.get(f'https://www.tiktok.com/@{username}?lang=en', headers=headers)
-        return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]
-    except: return None
 
 def get_report_params(r_type, target_ID, session):
     base_url = 'https://www.tiktok.com/aweme/v1/aweme/feedback/'
@@ -131,104 +123,110 @@ def get_report_params(r_type, target_ID, session):
               f"&region={country}&priority_region={country}&os=ios&"
               f"cookie_enabled=true&screen_width=375&screen_height=667&"
               f"browser_language=en-US&browser_platform=iPhone&"
-              f"browser_name=Mozilla&browser_version=5.0&app_language=ar")
+              f"browser_name=Mozilla&browser_version=5.0+(iPhone;+CPU+iPhone+OS+15_1+like+Mac+OS+X)+"
+              f"AppleWebKit/605.1.15+(KHTML,+like+Gecko)+InspectBrowser&"
+              f"browser_online=true&app_language=ar&timezone_name=Asia%2FRiyadh&"
+              f"is_page_visible=true&focus_state=true&is_fullscreen=false")
 
-    params = {
-        1: "399", 2: "310", 3: "317", 4: "3142", 5: "306", 6: "308",
-        7: "3011", 8: "3052", 9: "3072", 10: "303", 14: "9004", 15: "90064", 16: "9010"
-    }
-    reason = params.get(r_type, "310")
-    url = (f"{base_url}{common}&history_len=14&reason={reason}&report_type=user"
-           f"&object_id={target_ID}&owner_id={target_ID}&target={target_ID}"
-           f"&reporter_id={device['reporter_id']}&current_region={country}")
-    
-    headers = {
-        'Accept': '*/*', 'Cookie': 'sessionid=' + session, 
-        'User-Agent': generate_user_agent(), 'Host': 'www.tiktok.com'
-    }
-    data = {"object_id": target_ID, "owner_id": target_ID, "report_type": "user", "target": target_ID}
-    return url, headers, data
+    params = { 1: {"reason": "399"}, 2: {"reason": "310"}, 3: {"reason": "317"}, 4: {"reason": "3142"}, 5: {"reason": "306"}, 6: {"reason": "308"}, 7: {"reason": "3011"}, 8: {"reason": "3052"}, 9: {"reason": "3072"}, 10: {"reason": "303"}, 14: {"reason": "9004"}, 15: {"reason": "90064"}, 16: {"reason": "9010"} }  
+    p = params.get(r_type, {"reason": "310"})  
+    url = (f"{base_url}{common}&history_len=14&reason={p['reason']}&report_type=user"  
+           f"&object_id={target_ID}&owner_id={target_ID}&target={target_ID}"  
+           f"&reporter_id={device['reporter_id']}&current_region={country}")  
+    rep_headers = { 'Accept': '*/*', 'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'en-US,en;q=0.5', 'Cookie': 'sessionid=' + session, 'Host': 'www.tiktok.com', 'User-Agent': generate_user_agent() }  
+    data = { "object_id": target_ID, "owner_id": target_ID, "report_type": "user", "target": target_ID }  
+    return url, rep_headers, data
 
-# --- واجهة الإدخال المطلوبة (تطلب منك المعلومات خطوة بخطوة) ---
+def validate_session(session):
+    check_url = 'https://api16-normal-c-alisg.tiktokv.com/passport/account/info/v2/?aid=1233'
+    headers = { 'User-Agent': generate_user_agent(), 'Cookie': 'sessionid=' + session }  
+    try:  
+        resp = requests.get(check_url, headers=headers, timeout=5)  
+        return 'user_id' in resp.text  
+    except: return False
 
-# 1. طلب يوزر الشخص
-target_user = st.text_input("👤 أدخل يوزر الضحية (Username):")
+def get_target_id(username):
+    headers = { 'Host': 'www.tiktok.com', 'User-Agent': generate_user_agent() }
+    try:  
+        req = requests.get(f'https://www.tiktok.com/@{username}?lang=en', headers=headers)  
+        return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
+    except: return None
 
-# 2. اختيار نوع البلاغ
-report_options = {
-    "1 - الإبلاغ عن محتوى": 1, "2 - البريد العشوائي/المضايقة": 2, "3 - دون السن القانونية": 3,
-    "4 - معلومات مزيفة": 4, "5 - خطاب كراهية": 5, "6 - محتوى إباحي": 6, "7 - منظمات إرهابية": 7,
-    "8 - إيذاء النفس": 8, "9 - مضايقة شخص": 9, "10 - عنف": 10, "12 - بلاغات عشوائية": 12,
-    "14 - احتيال/نصب": 14, "15 - تحديات خطيرة": 15, "16 - الإبلاغ عن سبام": 16
+# --- [نهاية الكود الأصلي] ---
+
+# --- [واجهة الويب والتحكم] ---
+st.image("https://files.catbox.moe/8z2xdh.jpg")
+st.title("💀 GX1 DARK PROTOCOL - WEB VERSION")
+
+# الإدخالات
+username_input = st.text_input("يوزر الضحية ➥", placeholder="e.g. gx1_king")
+
+menu_options = {
+    "1 - الإبلاغ عن محتوى": 1, "2 - البريد العشوائي": 2, "3 - دون السن": 3,
+    "4 - معلومات مزيفة": 4, "5 - خطاب كراهية": 5, "6 - محتوى إباحي": 6,
+    "7 - منظمات إرهابية": 7, "8 - إيذاء النفس": 8, "9 - مضايقة": 9,
+    "10 - عنف": 10, "12 - بلاغات عشوائية": 12, "14 - احتيال": 14,
+    "15 - تحديات خطيرة": 15, "16 - سبام": 16
 }
-selected_label = st.selectbox("⚖️ اختر نوع البلاغ المراد تنفيذه:", list(report_options.keys()))
-option = report_options[selected_label]
+selected_menu = st.selectbox("Select Report Type ➥", list(menu_options.keys()))
+option = menu_options[selected_menu]
 
-# 3. إدخال السيزنات والبروكسيات
-col_left, col_right = st.columns(2)
-with col_left:
-    sessions_input = st.text_area("📋 ألصق السيزنات هنا (كل سيزن في سطر):", height=200)
-with col_right:
-    proxies_input = st.text_area("🌐 ألصق البروكسيات هنا (اختياري):", height=200)
+sessions_raw = st.text_area("ألصق السيزنات هنا (كل سطر سيزن) ➤")
+proxy_raw = st.text_area("ألصق البروكسيات هنا (gx1gx1.txt محاكاة) ➤")
 
-# زر التشغيل
-if st.button("🚀 تشغيل الهجوم الآن"):
-    if not target_user or not sessions_input:
-        st.error("❗ يرجى إدخال يوزر الضحية والسيزنات أولاً!")
+if st.button("🚀 EXECUTE ATTACK"):
+    if not username_input or not sessions_raw:
+        st.error("❌ أين البيانات؟ أدخل اليوزر والسيزنات!")
     else:
-        # معالجة النصوص المدخلة
-        sessions_list = [s.strip() for s in sessions_input.split('\n') if s.strip()]
-        proxies_list = [format_proxy(p) for p in proxies_input.split('\n') if p.strip()]
+        # تحويل السيزنات إلى قائمة
+        sessions = [s.strip() for s in sessions_raw.split('\n') if s.strip()]
+        proxies_list = [format_proxy(p) for p in proxy_raw.split('\n') if p.strip()]
         
-        st.info("🔍 جاري فحص الهدف والتحقق من صحة السيزنات...")
+        target_id = get_target_id(username_input)
         
-        target_id = get_target_id(target_user)
         if not target_id:
-            st.error("❌ لم يتم العثور على حساب الضحية! تأكد من اليوزر.")
+            st.error("❌ User not found!")
         else:
+            st.success(f"🎯 Target Found: {target_id}")
+            
             # فحص السيزنات
-            valid_sessions = [s for s in sessions_list if validate_session(s)]
-            if not valid_sessions:
-                st.error("❌ جميع السيزنات المدخلة غير صالحة أو منتهية!")
-            else:
-                st.success(f"🎯 تم العثور على الهدف (ID: {target_id}) | السيزنات الشغالة: {len(valid_sessions)}")
-                
-                # عرض النتائج الحية
-                stat_col1, stat_col2 = st.columns(2)
-                success_val = stat_col1.metric("SUCCESS ✅", 0)
-                fail_val = stat_col2.metric("FAILED ❌", 0)
-                
-                log_box = st.expander("سجل البلاغات المباشر", expanded=True)
-                
-                s_count, f_count = 0, 0
-                random_mode = option in [12]
-
-                # حلقة التكرار اللانهائية كما في كود بايثون
-                try:
-                    while True:
-                        for session in valid_sessions:
-                            current_type = random.choice([1,2,3,4,5,6,7,8,9,10,14,15,16]) if random_mode else option
-                            url, headers, data = get_report_params(current_type, target_id, session)
-                            
-                            px = None
-                            if proxies_list:
-                                p_choice = random.choice(proxies_list)
-                                px = {"http": p_choice, "https": p_choice}
-                            
-                            try:
-                                r = requests.post(url, headers=headers, data=data, proxies=px, timeout=10)
-                                if expected_response in r.text:
-                                    s_count += 1
-                                    log_box.write(f"✅ تم الإرسال بنجاح | سيزن: {session[:10]}...")
-                                else:
-                                    f_count += 1
-                                    log_box.write(f"❌ فشل الإرسال (رد غير متوقع)")
-                            except:
-                                f_count += 1
-                                log_box.write(f"⚠️ خطأ اتصال")
-                            
-                            success_val.metric("SUCCESS ✅", s_count)
-                            fail_val.metric("FAILED ❌", f_count)
-                            time.sleep(1) # تأخير بسيط لضمان استقرار التطبيق
-                except Exception as e:
-                    st.warning("تم إيقاف العملية.")
+            st.write("🔍 التحقق من السيزنات...")
+            valid_sessions = [s for s in sessions if validate_session(s)]
+            st.write(f"✅ {len(valid_sessions)} Valid Sessions Found")
+            
+            # منطقة عرض اللوق (Terminal)
+            terminal = st.empty()
+            log_content = ""
+            
+            successful = 0
+            failed = 0
+            
+            # حلقة الهجوم
+            while True:
+                for session in valid_sessions:
+                    # منطق البلاغ العشوائي الأصلي
+                    current_type = random.choice([1,2,3,4,5,6,7,8,9,10,14,15,16]) if option == 12 else option
+                    url, headers, data = get_report_params(current_type, target_id, session)
+                    
+                    px = None
+                    if proxies_list:
+                        p = random.choice(proxies_list)
+                        px = {"http": p, "https": p}
+                    
+                    try:
+                        rep = requests.post(url, headers=headers, data=data, proxies=px, timeout=10)
+                        if '"status_code":0' in rep.text:
+                            successful += 1
+                            msg = f"✅ SUCCESS | Type: {current_type} | Session: {session[:10]}..."
+                        else:
+                            failed += 1
+                            msg = f"❌ FAILED | Type: {current_type} | Session: {session[:10]}..."
+                    except:
+                        failed += 1
+                        msg = "⚠️ CONNECTION ERROR"
+                    
+                    # تحديث الـ Terminal
+                    log_content = f"{msg}\n" + log_content
+                    terminal.code(f"Success: {successful} | Failed: {failed}\n\n{log_content}")
+                    
+                    time.sleep(2)
