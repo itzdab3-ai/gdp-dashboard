@@ -1,4 +1,6 @@
 streamlit
-instaloader
 requests
+user_agent
+pyfiglet
+
 
