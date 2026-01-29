@@ -1,177 +1,468 @@
 import os
+import subprocess
+import sys
+
+# قائمة المكتبات المطلوبة
+required_packages = [
+    "requests",
+    "user_agent",
+    "pyfiglet"
+]
+
+# دالة لتثبيت مكتبة واحدة
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# محاولة تثبيت كل مكتبة إن لم تكن موجودة
+for pkg in required_packages:
+    try:
+        if pkg == "user_agent":
+            import user_agent
+        elif pkg == "pyfiglet":
+            import pyfiglet
+        else:
+            __import__(pkg)
+    except ImportError:
+        print(f"[!] Installing {pkg} ...")
+        install(pkg)
+
+# بعد التثبيت، استيراد جميع المكتبات كما طلبت
+import re
 import requests
-import webbrowser
 import time
-import streamlit as st
-from typing import Any
+import sys
+import os
+import random
+from os import path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from user_agent import generate_user_agent
+import pyfiglet
 
-# محاولة استيراد المكتبات الأصلية
-try:
-    import instaloader
-except:
-    os.system('pip install instaloader')
-    import instaloader
+print("\n✅ جميع المكتبات جاهزة للاستخدام!")
 
-# --- الكود الأصلي الخاص بك (بدون حذف أي شيء) ---
-class sin:
-    def __init__(self):
-        self.g=0
-    def exit_csr(self)->any:
-        api=requests.get('https://www.instagram.com').cookies.get('csrftoken')
-        return api
-    def user_for_id(self,user_id :str,)->any:
-        B = instaloader.Instaloader()
-        username = user_id
-        profile = instaloader.Profile.from_username(B.context, username)
-        return profile.userid
-    def Send_Report(self,Sessionid:str,crf_tt:str,USER_E:str,)->any:
-        try:
-            url = "https://www.instagram.com/api/v1/web/reports/get_frx_prompt/"
-            payload = {
-              'container_module': "profilePage",
-              'entry_point': "1",
-              'location': "2",
-              'object_id': f"{USER_E!r}",
-              'object_type': "5",
-              'context': "{\"tags\":[\"ig_report_account\",\"ig_its_inappropriate\",\"violence_hate_or_exploitation\"],\"ixt_context_from_www\":\"QVFZWlRaZldlWnlJVlRtRklPMmRrNEoyd1p5WWVVRG9jblN3Slhra2JXY210QmJPQXU2YnNEcG16SHpVaFJhZXVKcVN2eU9GS25ZR3Q0a3dfWDE0ODRjeXpLWlZrb1ZQaHd0dDYwQklWMjVUcTNua05FdldGY1A1Nk5SUE9YYXM2SXhiVnh1WlJROTdBS3ZWdzRDQzREdkt5R2dsOFNoamRpekphdmZfQUJKVlFhYktzbERuQmN3S2dxUkxBVHQ3MnhsVDZqZ19kY1poTHJjT1F2N0hFMkE0dl9lQ3hINkl0aGVrU0RuNEdDbGtIamR1SGhwRm93ZnpxOXNxTVZMYUpZTGFVR0FnNEk2VnFjUGRJZGVjSklfOHl6azRsb1ZfNUhxa2lGWVlMaE5SdG9ZQzYtVjFhS05Wd2JVMkNvem5QMmVuT0JnUjdzblFJTEY0OEl0dzhaXzdsaXFXWlJoTDBiNDdfNHRxYS1iOUtjd3BQTjByZjMzcDRqZ0VIZkdZV2hjVXJmYVlLc21RQXJJWmFKOWtoRE9WZ2Y2LWJpUEt3T1BrdTU2YUZoUjV5bFBLWnJPQXBSQTlvdVdEcUJ3UmtzVkd3ZHJNcVdWUHJ5bGx4WWtzMm82ZlJOWWlRcl9WeHZBREpDRUxVamZnTkhEdEFjN0lzOFFLZlkzTGVkOHpXN1dBTXB1UkZhd09LcFZaSjNMQUpKZi13RmNLNXU3ajFrNi1DdHg3ZUVqUi1VTzQ0YXUtcHFySGM4VGRkaEtFdXh5cjhsUC1pb0s3SVhaWFBUd3lleFBQajlLcC1FWUNfanMwTjdKMkc5VWxsV2dzZ2UxZ3VaT0VXaGc3UklVUjN0Y2tldGhSTUR2X0xvd2FJewNDMHFmbWhEZmhubGpRejFsLTVhYTAyREhVYnpvX2ltNUllRTJBVXJ0eWpGVHdtTWxwS2l3ek51VEFHV2tPbVdxME56WHBMajVwa1hDRldBeGpoTUVDUU5BZmszR2o2NmVKeVBwakp5Q1FsUzEwUkFsUjc0YmRSSEpLTzN6MHNFMFMwTFNxQUVHZU5nZ1ZNbDJKZVJWU2hpRjVlX3NYb2NLdDVVTVJ4RDdVU25nelBxTXF4XzZNa3c1cnlPMVk5MDBNYmU4dmEtdTBLU1NqR3dBMkl6YXp4MFdRaHdEN0pfMG5HOG1VTG1CMWhmT2RUbUJlRllYbWhfTUZhTlFWU0ZObHpBMEpSaDBVT29veEg5bVFBOWJPRXVickd4Nl8tYmZwem5EZWZLNUxFX1V2djlGdlF0aE5BSFZHTHJqbmFoUEpfMThwdndqUTRRV3BuQnBNdFJ3NDdTaEU1YktzVEl3THQ2eVVXMWpHWFBTQUo5LUxvcV9lVmVqU3FZdDdkY0owaVgyNlo3SVhjOExiOWh6VWQyNlJMQXZFZ3daZTNBd3NoN2lYRlRYclVIUV9iQ0E2NUZIZVZHV0RJNHNyRHZzVi1NTDBtWUkxSUxLNVpVNE4ySURXOV9HaHVlaDhhbDZBMnIzN3BRdU5TSEtYRkpQNnZoU0J3U0xuTUNhbDZQVmpEZVBRc1RjT2hfRGJubWZmWXhGeWRRLXB2VVRkdW5yOWxJelFzeHh3cldnd2hvNk5VTjRrc0Rpa0p1R0xvQkpmd0t6dHRJWnZIZkNsQmQ3ZjZrcmVyZk53VHRPSk9kR0RFcWUta1QydmRBOTlRUl9QNVhsdXptdzJSeW40bko3N1NVMm5aQ1dJa3BUNUoyNFhOU0x1TmRJTjlMSXdYSWNISDB2WHBNOWNId0Zqd1Fhc2pJbXY1RWwyQ08wYXhvV1BIMW9MNGlZdzlBenZCT2pZT29zR19oOUU2eDg2VXBlbWJJNXhTUjRjeDhEZU1kNGxaMXkzMkNnWXZHZmVCQzVIR1lwczJGRnJLOFJRUnJhV2k3UVZnMi1uUl9tTVo4V0ZlQkowdkZqaFlqSWN3cndUd20wTjhwd0IwUXkwd1RkbVVRZzZSbkdrWjFUdktBeFlaVFhwM0Nud0dENmdDZFpVdE9OOHJlWjE1WGhoYkp5NjQ4Mi1sbE1mcWloUU84UzE5VnBkekNrbFBuNWFkU1MyejducmFGRUhnOUdPcm9EYWNxSGU2WmdULWMxSmo2QXdFdlV1OGpTU2YtZ1U3YTF5VlpWZlhaRTFjVGRuYnI2WUEyX0xCckYzWFdZejNvWEx1SkpXRWZQTEpFVVBJNjBMUmtvdzZrMWdBRUNxd1RNa0liWHV6R3paZHZmbVlAzUohmTI3ejJZQjE5ODFkNmI2ZWtPY3pZT200R1E1Z3pBZTFJcHBLQ3Z4X2NZSHBzUkVnUWFLSm9iQ2tpUG9SZWVvMzhtZ2pjdElycThkLW9hczdYeGZZQVc4MHhCcld1M3ZmQmNOQ01rWlZkT2ZfTzRCVEU3ck5hVG12c2QySWFRLUNwemlqWUc2LTk1WXJMWWd4bkliUmNObHJOOXF1bXZfWEkzSWpPenhpRVNnbFA2NEVxcVJiam5hdGlqbV8xSkpsNmVhSGFMTzVuLVZ3bDQxdURQY2lvTWJUbDNrUWhtMFlOMDZWNjNnVTJMUXhvME9BTVFCeUstSjVPWDkwQXR2dGhrN0Radlp2dFB5eVhDYmNoaGIxVUdDeU5rdW1PM1BlSVBtcHZmd2NPM0pMMDE1ZzZGNTgyTEJHamlJdndDWEJLaXh0Vi1xRkNpWndkRy1rRXpoX1Zwc1R6TmpIbHYxLXNJc2d3QmJhRmwxM2d3dlNqSExvVnBDeFRFM0Y4X2NqZHgtdS1WaGNGNlF2ZkYtMzBlTWtOdDI2TVkyWVpyV0tZb1RUOEhnZXZob2I2Yk95MFhEWU1FcTVSNWt4SE55em00ZXlsU1FHVkxEODhGbDd0WU0xN3c3TTRVbTM0YkRieHEtUmg5aFFDdDBHOWhBUVhnQnFyZXZzdXRoLU02eElHak5PQXRqSmhDOGJfY2U0V3ZQeVRrXzVWMWdyWmhZX1BtWk1TdFZDdHpUSmFlRVdHd1o3ZmZwS0doenlfcVFrVGVJcFVTdDdfcmhuRENUTEs0eDJMVlF3V25fN1BjZ0tzMFBnVnRydWN0RWFYQlRTMzM3ZFEyWmhuUGU3VlhxZHRIbGtKM1E3ZXBpOXZlaUdBemgtOHdjTTV1UGJ4eWt0aWJUWFZJR2U5aGI2TkZNUEdvWUlFcmNvbFpoV2Rpakp2ay1OQl9TUTBSMEY0VFY4am9WT1oxd2d3ckFUbmIzMkhVTW1JbHBTbUt4elE1TmJpVDRfNVp4d0VTbmNabVBlem5VVWRIUlYwUmhicDdXSDI2dTVVdGZjNUFweVpYVHJYVGcwcHBJVlNKMTRLSkZ0cG05NlVKaE10MzRkU0JZUXU3cFURxRmx5THV2NW14UW9IUTVya2VxRG8weF9vOTNyd2UyT054UktjZkRVTXhBMGpOMlA3NTVUdk5UeTB6WkJKNGlMem12NmhHX3FheVl2TU1jZGJ4aENYcFlPMlRBS2VJSjE1aTVFaVVnZUU5Sk1qaEdUSmZjaUpTZ0hkLVlZWHB1NW9zcV9jTGw4UExaU0t5UDJKRTR4ZkVCZl8wZHBsT29ocE5FNVFhaGV4bWVsYWVYVnB6UGhXTDVFZkFmOUtTdHo3bGxCZEJIR0w2Y3RTdEFYOVRhLXdnM1Q3a1RmSXhpT2NWUnBRVWxKSDRobGpzdkNuQ2pyOGFQRFZVTjFTVjFYMF81SVY1Rl9zR1VtMnJGQlZvblpGWDdicEFJem91ZTlaczBURUxKZXlqSzlpX3ByQmdRb0t4c09Ld0ZXR215Qm4yeUpqd0xxeFdNSHQ4ZWM3SWY2V29Nb1Z4aWp0ODMxTW5LaDVfcjFEcjlXMnRrZXhOMnExbVFpalYzSDk2ZnVJREJGT2dhaW9DXzFBdUF2TGJQZlI3dWpSaGYxX09wQXJnaFNpU21xcGp5ZDc3UHgtZmswak9VdUhkMzhsdV93TG1ZSmtCZE5GZTQwMnF3REhJLW1pRWRjRC1SRHJCSm9TRFB3TTFnYnA4OGt5YndHdWZRUmQyN0ZyUjZpV0c5RDVzTUgybUYwcDZBd2pCejhsQ0JTMEtNY25SWWYwdGlWQ0QwUFhndXlsZ0RacWFaQUVqZUw3ZkI3UnVyYm8yakZfbURTellEd2M1VWc1OUdKbHl3OU1NUi1XaXJES1otaWk3S3VWRm94RXZZbi01ZC1vVVdKb3RUZklzaGdJZzA4QmVJSG81OUZjRHJtYU0xYjRTSVl0U21zYWpuRGI4NDJiUEFHeHBDR1ZBVXRSVlpxWHlyWU1VUnZIVmhKN2twV0hBVER5UnJ6RDdTQVFnMkNnS2tJRU9xV1JIYkIxOFFGVk1KQm5uRFM2V3BhenY1dUtjTmFFOEwtSzNxc3VDdmhSYUNTbm9BdTN2Sm5JYk1vZmRoU1FNdjhycl9Sdkx0WjZMR1ZncVBHa1JialpyeTNzb1JobzhfMEZYbVhXVHREdFliZkdBTVZXZW9DSEs0M19tMzN0MzJIZ1VBWG9zZ3gw\",\"frx_context_from_www\":\"{\\\"location\\\":\\\"ig_profile\\\",\\\"entry_point\\\":\\\"chevron_button\\\",\\\"session_id\\\":\\\"b6f2fe68-e6c2-402d-ba61-fa32742586c3\\\",\\\"tags\\\":[\\\"ig_report_account\\\",\\\"ig_its_inappropriate\\\",\\\"violence_hate_or_exploitation\\\"],\\\"object\\\":\\\"{\\\\\\\"user_id\\\\\\\":\\\\\\\""+repr(USER_E)+"\\\\\\\"}\\\",\\\"reporter_id\\\":17841477249253541,\\\"responsible_id\\\":17841402263455874,\\\"locale\\\":\\\"ar_AR\\\",\\\"app_platform\\\":1,\\\"extra_data\\\":{\\\"container_module\\\":\\\"profilePage\\\",\\\"app_version\\\":\\\"None\\\",\\\"is_dark_mode\\\":null,\\\"app_id\\\":1217981644879628,\\\"sentry_feature_map\\\":\\\"Jv7di5q+BBgNMzcuMjM2LjEwLjEwMxhvTW96aWxsYS81LjAgKExpbnV4OyBBbmRyb2lkIDEwOyBLKSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTQwLjAuMC4wIE1vYmlsZSBTYWZhcmkvNTM3LjM2GAVhcl9BUhwYIGE1OTk3Yzc1ZGE0ZmExNWUyYjZkNzFiMGQ5MDY3MWRhGCBmYzE0NTBiNTg5MDViOTVmNWU1YTM2YWRiZTAxYzRjOBggYzFlYzY5ZDc5NmMzYzU4ZDQ4MmI5OTFlNWM2ZmViZjIYIDczZjk2ZThjZmZmNzZkNjEwZjA0Njg2MDFjNTk1MDM3IRggZDUzOTZjNjZhMjM0NDBkOWYxMDQ5MjJhN2U1NGNiODAYJHQxM2QzMTExaDJfZThmMWU3ZTc4ZjcwXzVhYzcxOTdkZjlkMgA8LBgcYUp5MHV3QUJBQUdoTXpnY2hadUNSQ1dCdEJmSxbw6Y\\\\\\/ClGYAHBUCKwGIEWRpc3BsYXlfc2l6ZV90eXBlH0RldmljZVR5cGVCeURpc3BsYXlTaXplLlVOS05PV04AIjw5FQAZFQA5FQAAGCAwOWFmZmNiNzFmNGM0Mzg2ODkzZThjNzMxNDVmNjBjZBUCERIYEDEyMTc5ODE2NDQ4Nzk2MjgcFpjbm4bCsLI\\\\\\/GEAzNzQ4YTZmMmQ5NmY0OTM2YTM0ZmViZjI1MWNjMmM1YWU0MjBjNGRlMGM3ZDk2NGVkY2JjZmJhNTkwYTUzNjMyGBk3NzA2ODMzNDk3NToyMDoxNzU3MjI3NTU0ABwVBAASKChodHRwczovL3d3dy5pbnN0YWdyYW0uY29tL3NoZXJpbnNiZWF1dHkvGA5YTUxIdHRwUmVxdWVzdAAWyoKum9SusT8oIy9hcGkvdjEvd2ViL3JlcG9ydHMvZ2V0X2ZyeF9wcm9tcHQvFigWxKjpiw1YATQYBVZBTElEAA==\\\",\\\"shopping_session_id\\\":null,\\\"logging_extra\\\":null,\\\"is_in_holdout\\\":null,\\\"preloading_enabled\\\":null},\\\"frx_feedback_submitted\\\":false,\\\"ufo_key\\\":\\\"ufo-3f1f7ad1-e14d-4742-b7c5-0893703561c8\\\",\\\"additional_data\\\":{\\\"is_ixt_session\\\":true,\\\"frx_validation_ent\\\":\\\"IGEntUser\\\"},\\\"profile_search\\\":false,\\\"screen_type\\\":\\\"frx_tag_selection_screen\\\",\\\"ent_has_music\\\":false,\\\"evidence_selections\\\":[],\\\"is_full_screen\\\":false}\"}",
-              'selected_tag_types': "[\"violent_hateful_or_disturbing-credible_threat\"]",
-              'frx_prompt_request_type': "2",
-              'jazoest': "22668"
-            }
-            headers = {
-              'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36",
-              'x-ig-app-id': "1217981644879628",
-              'x-requested-with': "XMLHttpRequest",
-              'x-csrftoken': crf_tt,
-              'Cookie': f"csrftoken={crf_tt}; sessionid={Sessionid}"
-            }
-            response = requests.post(url, data=payload, headers=headers).text
-            if '"status":"ok"' in response:
-                self.g+=1
-                return True, f" [{self.g}] تم البلاغ بنجاح | الحساب: {Sessionid[:10]}..."
-            else:
-                return False, f" [!] خطأ في الجلسة {Sessionid[:10]}...: {response[:50]}"
-        except Exception as e:
-            return False, str(e)
-														
-    def lite_re(self,Sessionid:str,crf_tt:str,USER_E:str,)->any:
-        try:
-            url = f"https://i.instagram.com/users/{USER_E!r}/flag/"
-            headers = {
-                "User-Agent": "Mozilla/5.0",
-                "Host": "i.instagram.com",
-                "cookie": f"sessionid={Sessionid}",
-                "X-CSRFToken":crf_tt,
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-            }
-            data = f"source_name=&reason_id=5&frx_context="
-            r3 = requests.post(url, headers=headers, data=data, allow_redirects=False).text
-            return r3		
-        except Exception as e:
-            return str(e)
+R = "\033[1;31m" # احمر
+G = "\033[1;32m" # اخضر
+Y = "\033[1;33m" # اصفر
+B = "\033[1;34m" # ازرق
+C = "\033[1;97m"  # ابيض
+rest = "\033[0m"  # استرجاع اللون الى الون الاصلي
 
-# --- إعداد واجهة Streamlit (التصميم المرعب) ---
-st.set_page_config(page_title="Dark Instagram Reporter", page_icon="💀")
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-# CSS لإضافة واجهة مرعبة وتأثيرات
-st.markdown("""
-    <style>
-    .stApp {
-        background-color: #000000;
-        color: #ff0000;
-        font-family: 'Courier New', Courier, monospace;
+# --- الواجهة المخيفة الجديدة ---
+def scary_interface():
+    clear()
+    # عرض الصورة المطلوبة مع إطار
+    print(f"{R}╔════════════════════════════════════════════════════════════════╗")
+    print(f"{R}║ {C}IMAGE LINK: https://files.catbox.moe/8z2xdh.jpg {R}║")
+    print(f"{R}╚════════════════════════════════════════════════════════════════╝")
+    
+    banner = pyfiglet.figlet_format("DEATH  TOOL", font="slant")
+    print(f"{R}{banner}")
+    print(f"{Y}      [!] WARNING: YOU ARE ENTERING THE DARK ZONE [!]{rest}\n")
+    print(f"{R}      -- Created with Horror -- Keep your soul safe --{rest}\n")
+
+def blink_ascii(sd):
+    art = sd + """GX1GX1"""
+
+    for _ in range(4):  # يومض 4 مرات  
+        clear()  
+        print(f"\033[91m{art}\033[0m")  # أحمر  
+        time.sleep(0.4)  
+        clear()  
+        print(f"\033[92m{art}\033[0m")  # أخضر  
+        time.sleep(0.4)
+
+# مثال للتشغيل
+sd = ""
+blink_ascii(sd)
+
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def print_green(msg):
+    print(f"\033[1;32m{msg}\033[0m")
+
+def print_red(msg):
+    print(f"\033[1;31m{msg}\033[0m")
+
+def print_white(msg):
+    print(f"\033[1;37m{msg}\033[0m")
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def display_banner():
+    scary_interface() # استخدام الواجهة الجديدة
+
+def print_option(number, text):
+    print(f"\033[44m \033[92m[{number}]\033[97m {text} \033[0m")
+
+def print_exit_option(number, text):
+    print(f"\033[41m \033[92m[{number}]\033[97m {text} \033[0m")
+
+def show_menu():
+    print_option("1", "الإبلاغ عن محتوى")
+    print_option("2", "البريد العشوائي/المضايقة")
+    print_option("3", "دون السن القانونية (أقل من 13)")
+    print_option("4", "معلومات مزيفة")
+    print_option("5", "خطاب كراهية")
+    print_option("6", "محتوى إباحي")
+    print_option("7", "منظمات إرهابية")
+    print_option("8", "إيذاء النفس")
+    print_option("9", "مضايقة (شخص أعرفه)")
+    print_option("10", "عنف")
+    print_option("12", "بلاغات عشوائية")
+    print_option("13", "بلاغات عبر بروكسي")
+    print_option("14", "احتيال/نصب")
+    print_option("15", "تحديات خطيرة")
+    print_option("16", "الإبلاغ عن سبام")
+    print_exit_option("0", "خروج من الأداة")
+    print("")  # سطر فارغ
+
+def format_proxy(proxy):
+    proxy = proxy.strip()
+    if not (proxy.startswith("http://") or proxy.startswith("https://") or
+            proxy.startswith("socks5://") or proxy.startswith("socks4://")):
+        return "http://" + proxy
+    return proxy
+
+TEST_URL = "https://httpbin.org/ip"
+PROXY_TIMEOUT = 5
+MAX_THREADS = 200
+
+def check_proxy(proxy_url):
+    formatted = format_proxy(proxy_url)
+    proxies = {"http": formatted, "https": formatted}
+    try:
+        response = requests.get(TEST_URL, proxies=proxies, timeout=PROXY_TIMEOUT)
+        if response.status_code == 200:
+            return proxy_url, True
+    except Exception:
+        pass
+    return proxy_url, False
+
+def check_proxies_concurrently(proxy_list):
+    working = []
+    with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+        future_to_proxy = {executor.submit(check_proxy, p): p for p in proxy_list}
+        for future in as_completed(future_to_proxy):
+            proxy, status = future.result()
+            if status:
+                working.append(format_proxy(proxy))
+    return working
+
+expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
+
+# قائمة الأجهزة (50 جهاز)
+devices = [
+    {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
+    {"reporter_id": "27568146", "device_id": "7008218736944907778"},
+    {"reporter_id": "6955107540677968897", "device_id": "7034110346035136001"},
+    {"reporter_id": "310430566162530304", "device_id": "7034110346035136001"},
+    {"reporter_id": "7242379992225940485", "device_id": "7449373206865561094"},
+    {"reporter_id": "7024230440182809607", "device_id": "7008218736944907779"},
+    {"reporter_id": "27568147", "device_id": "7008218736944907779"},
+    {"reporter_id": "6955107540677968898", "device_id": "7034110346035136002"},
+    {"reporter_id": "310430566162530305", "device_id": "7034110346035136002"},
+    {"reporter_id": "7242379992225940486", "device_id": "7449373206865561095"},
+    {"reporter_id": "7024230440182809608", "device_id": "7008218736944907780"},
+    {"reporter_id": "27568148", "device_id": "7008218736944907780"},
+    {"reporter_id": "6955107540677968899", "device_id": "7034110346035136003"},
+    {"reporter_id": "310430566162530306", "device_id": "7034110346035136003"},
+    {"reporter_id": "7242379992225940487", "device_id": "7449373206865561096"},
+    {"reporter_id": "7024230440182809609", "device_id": "7008218736944907781"},
+    {"reporter_id": "27568149", "device_id": "7008218736944907781"},
+    {"reporter_id": "6955107540677968900", "device_id": "7034110346035136004"},
+    {"reporter_id": "310430566162530307", "device_id": "7034110346035136004"},
+    {"reporter_id": "7242379992225940488", "device_id": "7449373206865561097"},
+    {"reporter_id": "7024230440182809610", "device_id": "7008218736944907782"},
+    {"reporter_id": "27568150", "device_id": "7008218736944907782"},
+    {"reporter_id": "6955107540677968901", "device_id": "7034110346035136005"},
+    {"reporter_id": "310430566162530308", "device_id": "7034110346035136005"},
+    {"reporter_id": "7242379992225940489", "device_id": "7449373206865561098"},
+    {"reporter_id": "7024230440182809611", "device_id": "7008218736944907783"},
+    {"reporter_id": "27568151", "device_id": "7008218736944907783"},
+    {"reporter_id": "6955107540677968902", "device_id": "7034110346035136006"},
+    {"reporter_id": "310430566162530309", "device_id": "7034110346035136006"},
+    {"reporter_id": "7242379992225940490", "device_id": "7449373206865561099"},
+    {"reporter_id": "7024230440182809612", "device_id": "7008218736944907784"},
+    {"reporter_id": "27568152", "device_id": "7008218736944907784"},
+    {"reporter_id": "6955107540677968903", "device_id": "7034110346035136007"},
+    {"reporter_id": "310430566162530310", "device_id": "7034110346035136007"},
+    {"reporter_id": "7242379992225940491", "device_id": "7449373206865561100"},
+    {"reporter_id": "7024230440182809613", "device_id": "7008218736944907785"},
+    {"reporter_id": "27568153", "device_id": "7008218736944907785"},
+    {"reporter_id": "6955107540677968904", "device_id": "7034110346035136008"},
+    {"reporter_id": "310430566162530311", "device_id": "7034110346035136008"},
+    {"reporter_id": "7242379992225940492", "device_id": "7449373206865561101"},
+    {"reporter_id": "7024230440182809614", "device_id": "7008218736944907786"},
+    {"reporter_id": "27568154", "device_id": "7008218736944907786"},
+    {"reporter_id": "6955107540677968905", "device_id": "7034110346035136009"},
+    {"reporter_id": "310430566162530312", "device_id": "7034110346035136009"},
+    {"reporter_id": "7242379992225940493", "device_id": "7449373206865561102"},
+    {"reporter_id": "7024230440182809615", "device_id": "7008218736944907787"},
+    {"reporter_id": "27568155", "device_id": "7008218736944907787"},
+    {"reporter_id": "6955107540677968906", "device_id": "7034110346035136010"},
+    {"reporter_id": "310430566162530313", "device_id": "7034110346035136010"},
+    {"reporter_id": "7242379992225940494", "device_id": "7449373206865561103"}
+]
+
+# قائمة الدول (50 دولة)
+countries = [
+    "SA", "US", "GB", "CA", "AU", "DE", "FR", "IT", "ES", "BR",
+    "RU", "CN", "JP", "KR", "IN", "ID", "TR", "NL", "SE", "NO",
+    "DK", "FI", "PL", "UA", "CZ", "RO", "HU", "GR", "PT", "BE",
+    "CH", "AT", "IE", "SG", "MY", "TH", "VN", "PH", "MX", "AR",
+    "CL", "CO", "PE", "ZA", "EG", "NG", "KE", "MA", "DZ", "AE"
+]
+
+def get_report_params(r_type, target_ID, session):
+    base_url = 'https://www.tiktok.com/aweme/v1/aweme/feedback/'
+    
+    # اختيار جهاز عشوائي
+    device = random.choice(devices)
+    
+    # اختيار دولة عشوائية
+    country = random.choice(countries)
+    region = country
+    priority_region = country
+    current_region = country
+    
+    common = (f"?aid=1233&app_name=tiktok_web&device_platform=web_mobile"
+              f"&region={region}&priority_region={priority_region}&os=ios&"
+              f"cookie_enabled=true&screen_width=375&screen_height=667&"
+              f"browser_language=en-US&browser_platform=iPhone&"
+              f"browser_name=Mozilla&browser_version=5.0+(iPhone;+CPU+iPhone+OS+15_1+like+Mac+OS+X)+"
+              f"AppleWebKit/605.1.15+(KHTML,+like+Gecko)+InspectBrowser&"
+              f"browser_online=true&app_language=ar&timezone_name=Asia%2FRiyadh&"
+              f"is_page_visible=true&focus_state=true&is_fullscreen=false")
+
+    params = {  
+        1: {"reason": "399"},  
+        2: {"reason": "310"},  
+        3: {"reason": "317"},  
+        4: {"reason": "3142"},  
+        5: {"reason": "306"},  
+        6: {"reason": "308"},  
+        7: {"reason": "3011"},  
+        8: {"reason": "3052"},  
+        9: {"reason": "3072"},  
+        10: {"reason": "303"},  
+        14: {"reason": "9004"},  
+        15: {"reason": "90064"},  
+        16: {"reason": "9010"}  
+    }  
+    
+    p = params.get(r_type)  
+    url = (f"{base_url}{common}&history_len=14&reason={p['reason']}&report_type=user"  
+           f"&object_id={target_ID}&owner_id={target_ID}&target={target_ID}"  
+           f"&reporter_id={device['reporter_id']}&current_region={current_region}")  
+    
+    rep_headers = {  
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',  
+        'Accept-Encoding': 'gzip, deflate, br',  
+        'Accept-Language': 'en-US,en;q=0.5',  
+        'Connection': 'keep-alive',  
+        'Cookie': 'sessionid=' + session,  
+        'Host': 'www.tiktok.com',  
+        'Sec-Fetch-Dest': 'document',  
+        'Sec-Fetch-Mode': 'navigate',  
+        'Sec-Fetch-Site': 'none',  
+        'Sec-Fetch-User': '?1',  
+        'Upgrade-Insecure-Requests': '1',  
+        'User-Agent': generate_user_agent()  
+    }  
+    
+    data = {  
+        "object_id": target_ID,  
+        "owner_id": target_ID,  
+        "report_type": "user",  
+        "target": target_ID  
+    }  
+    
+    return url, rep_headers, data
+
+def send_report(session, report_url, headers, data, proxies=None):
+    try:
+        rep = requests.post(report_url, headers=headers, data=data, proxies=proxies, timeout=10)
+        return expected_response not in rep.text
+    except Exception:
+        return False
+
+def get_random_report_type():
+    return random.choice([1,2,3,4,5,6,7,8,9,10,14,15,16])
+
+def validate_session(session):
+    check_url = ('https://api16-normal-c-alisg.tiktokv.com/passport/account/info/v2/'
+                 '?scene=normal&multi_login=1&account_sdk_source=app&passport-sdk-version=19&'
+                 'os_api=25&device_type=A5010& ss_mix=a&manifest_version_code=2018093009&dpi=191&'
+                 'carrier_region=JO&uoo=1&region=US&app_name=musical_ly&version_name=7.1.2&'
+                 'timezone_offset=28800&ts=1628767214&ab_version=7.1.2&residence=SA&'
+                 'cpu_support64=false&current_region=JO&ac2=wifi&ac=wifi&app_type=normal&'
+                 'host_abi=armeabi-v7a&channel=googleplay&update_version_code=2018093009&'
+                 '_rticket=1628767221573&device_platform=android&iid=7396386396296286392&'
+                 'build_number=7.1.2&locale=en&op_region=SA&version_code=200705&'
+                 'timezone_name=Asia%2FShanghai&cdid=f61ca549-c9ee-450b-90da-8854423b74e7&'
+                 'openudid=3e5afbd3f6dde322&sys_region=US&device_id=7296396296396396393&'
+                 'app_language=en&resolution=576*1024&device_brand=OnePlus&language=en&'
+                 'os_version=7.1.2&aid=1233&mcc_mnc=2947')
+
+    headers = {  
+        'Host': 'api16-normal-c-alisg.tiktokv.com',  
+        'Accept-Encoding': 'gzip, deflate',  
+        'User-Agent': generate_user_agent(),  
+        'Cookie': 'sessionid=' + session  
+    }  
+    
+    try:  
+        resp = requests.get(check_url, headers=headers, timeout=5)  
+        if '"session expired, please sign in again"' in resp.text:  
+            return False  
+        return 'user_id' in resp.text  
+    except Exception:  
+        return False
+
+def get_target_id(username):
+    headers = {
+        'Host': 'www.tiktok.com',
+        'User-Agent': generate_user_agent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,/;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.7',
+        'Accept-Encoding': 'gzip, deflate',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Te': 'trailers',
+        'Connection': 'close',
     }
-    h1 {
-        color: #ff0000;
-        text-shadow: 0 0 10px #ff0000, 0 0 20px #8b0000;
-        text-align: center;
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.7; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-    .stButton>button {
-        background-color: #4a0000;
-        color: white;
-        border: 2px solid #ff0000;
-        box-shadow: 0 0 10px #ff0000;
-        width: 100%;
-    }
-    .stButton>button:hover {
-        background-color: #ff0000;
-        color: black;
-    }
-    input {
-        background-color: #1a1a1a !important;
-        color: #00ff00 !important;
-        border: 1px solid #ff0000 !important;
-    }
-    .log-container {
-        background-color: #0a0a0a;
-        padding: 10px;
-        border: 1px solid #333;
-        color: #00ff00;
-        font-family: monospace;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
-st.markdown("<h1>نظام البلاغات المظلم 💀</h1>", unsafe_allow_html=True)
+    try:  
+        req = requests.get(f'https://www.tiktok.com/@{username}?lang=en', headers=headers)  
+        return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
+    except:  
+        return None
 
-# تهيئة الكائن
-OO = sin()
+def main():
+    display_banner()
 
-# الحقول النصية (مترجمة للعربية)
-user_id = st.text_input("أدخل يوزر الضحية (USER >> )", "")
-count_sessions = st.number_input("كم عدد Session IDs التي تريد إضافتها؟", min_value=1, step=1)
+    while True:  
+        show_menu()  
+        try:  
+            print(B+"اختر رقم البلاغ                                 " )  
+            option = input(Y+"Select Report Type ➥ ")  
+            if option == "0":  
+                print_red("Exiting tool...")  
+                sys.exit(0)  
+            elif option in ["1","2","3","4","5","6","7","8","9","10","12","13","14","15","16"]:  
+                option = int(option)  
+                break  
+            else:  
+                print_red("Invalid option! Please try again.")  
+        except ValueError:  
+            print_red("Please enter a valid number!")  
+    
+    random_mode = option in [12, 13]  
+    proxy_mode = True    
+    
+    sessions = []  
+    print(B+'\n[!] لصق السيزنات الآن (أدخل السيزنات ثم اكتب "done" في سطر جديد للانتقال للخطوة التالية):')  
+    while True:
+        line = input(C + "➤ ")
+        if line.lower() == 'done':
+            break
+        if line.strip():
+            sessions.append(line.strip())
+    
+    if not sessions:
+        print_red("لم يتم إدخال أي سيزن!")
+        sys.exit(1)
 
-session_list = []
-for i in range(int(count_sessions)):
-    sid = st.text_input(f"أدخل sessionid رقم {i+1}", key=f"sid_{i}", type="password")
-    if sid:
-        session_list.append(sid)
-
-option = st.selectbox("اختر نوع العملية:", ["-- اختر --", "1- instagram report", "2- instagram lite report", "3- قناة المطور"])
-
-if st.button("بدء الهجوم 🧨"):
-    if not user_id or not session_list:
-        st.error("خطأ: يجب إدخال اليوزر وجلسة واحدة على الأقل!")
-    elif option == "-- اختر --":
-        st.warning("الرجاء اختيار نوع العملية.")
-    else:
-        try:
-            with st.spinner('جاري التحضير... هجوم مرعب قادم'):
-                crf_tt = OO.exit_csr()
-                USER_E = OO.user_for_id(user_id)
+    print_white("جار التحـقق...")  
+    valid_sessions = [s for s in sessions if validate_session(s)]  
+    
+    if not valid_sessions:  
+        print_red("No valid sessions found!")  
+        sys.exit(1)  
+    
+    print_green(f"{len(valid_sessions)} valid sessions")  
+    
+    working_proxies = []  
+    if proxy_mode:  
+        print(B+'\n[!] لصق البركسيات الآن (أدخل البركسيات ثم اكتب "done" في سطر جديد للبدء):')  
+        proxy_list = []
+        while True:
+            line = input(C + "Proxy ➤ ")
+            if line.lower() == 'done':
+                break
+            if line.strip():
+                proxy_list.append(line.strip())
+        
+        if proxy_list:
+            print_white(f"Checking {len(proxy_list)} proxies...")  
+            working_proxies = check_proxies_concurrently(proxy_list)  
             
-            st.success(f"تم العثور على هدفك بنجاح: {USER_E}")
+            if not working_proxies:  
+                print_red("No working proxies found!")  
+                sys.exit(1)  
             
-            if option == "1- instagram report":
-                st.markdown("### سجل البلاغات:")
-                placeholder = st.empty()
-                log_data = ""
-                for _ in range(50): # عدد التكرار
-                    for current_sid in session_list:
-                        success, result = OO.Send_Report(current_sid, crf_tt, USER_E)
-                        log_data = f"{result}\n" + log_data
-                        placeholder.text_area("", value=log_data, height=300)
-                        time.sleep(0.5)
+            print_green(f"{len(working_proxies)} working proxies found")  
+        else:  
+            print_red("لم يتم إدخال بركسيات!")  
+            sys.exit(1)  
+    
+    print(B+'يـوزر الضحـية                  ')  
+    username = input(Y+"Enter target username ➥ ")  
+    target_id = get_target_id(username)  
+    
+    if not target_id:  
+        print_red("User not found or banned!")  
+        sys.exit(1)  
+    
+    try:  
+        delay = int(("2"))  
+    except ValueError:  
+        print_white("Using default delay of 5 seconds")  
+        delay = 5  
+    
+    continuous = ("y").lower() == 'y'  
+    
+    successful = 0  
+    failed = 0  
+    
+    try:  
+        while True:  
+            for session in valid_sessions:  
+                current_type = get_random_report_type() if random_mode else option  
+                url, headers, data = get_report_params(current_type, target_id, session)  
+                
+                proxies = None  
+                if proxy_mode and working_proxies:  
+                    proxy = random.choice(working_proxies)  
+                    proxies = {"http": proxy, "https": proxy}  
+                
+                if send_report(session, url, headers, data, proxies):  
+                    successful += 1  
+                else:  
+                    failed += 1  
+                
+                sys.stdout.write(f"\r\033[1;32mSuccess: {successful}\033[0m | \033[1;31mFailed: {failed}\033[0m")  
+                sys.stdout.flush()  
+                
+                time.sleep(delay)  
+            
+            if not continuous:  
+                break  
+    
+    except KeyboardInterrupt:  
+        print_red("\nReporting stopped by user")  
+    
+    print_white(f"\nFinal Results:")  
+    print_green(f"Successful Reports: {successful}")  
+    print_red(f"Failed Reports: {failed}")
 
-            elif option == "2- instagram lite report":
-                st.markdown("### سجل البلاغات Lite:")
-                placeholder = st.empty()
-                log_data = ""
-                for current_sid in session_list:
-                    USER_lite = OO.lite_re(current_sid, crf_tt, USER_E)
-                    log_data = f"Session {current_sid[:10]}... | Result: {USER_lite}\n" + log_data
-                    placeholder.text_area("", value=log_data, height=300)
-
-            elif option == "3- قناة المطور":
-                webbrowser.open('https://t.me/gx1gx1')
-                st.info('تم توجيهك إلى صفحة المطور..')
-
-        except Exception as e:
-            st.error(f"حدث خطأ مرعب: {e}")
-
+if __name__ == "__main__":
+    main()
