@@ -9,13 +9,52 @@ from os import path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from user_agent import generate_user_agent
 
-# --- إعداد واجهة التطبيق ---
+# --- إعداد واجهة التطبيق وحذف شعارات الاستضافة ---
 st.set_page_config(page_title="GX1 DARK PROTOCOL", page_icon="💀", layout="wide")
 
-# تصميم الثيم الأسود والأحمر
+# CSS متقدم للخلفية المتحركة والإطار المرعب وحذف الهيدر
 st.markdown("""
     <style>
-    .stApp { background-color: #000000; color: #ff0000; font-family: 'Courier New', Courier, monospace; }
+    /* حذف شعارات Streamlit (GitHub, Menu, Footer) */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
+    /* خلفية العناكب الحمراء المتحركة */
+    .stApp {
+        background-color: #000000;
+        background-image: url('https://www.transparenttextures.com/patterns/spider-web.png');
+        background-attachment: fixed;
+        color: #ff0000;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    
+    /* تأثير العناكب المتحركة (CSS Animation) */
+    @keyframes move-spiders {
+        from { background-position: 0 0; }
+        to { background-position: 1000px 1000px; }
+    }
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: url('https://upload.wikimedia.org/wikipedia/commons/d/d2/Red_Spider_Icon.png') repeat;
+        background-size: 50px;
+        opacity: 0.05;
+        z-index: -1;
+        animation: move-spiders 100s linear infinite;
+    }
+
+    /* إطار مرعب للصورة */
+    .horror-frame {
+        border: 10px solid transparent;
+        padding: 15px;
+        border-image: url('https://img.freepik.com/free-vector/hand-drawn-gothic-frame-design_23-2149226164.jpg') 30 round;
+        box-shadow: 0 0 20px #ff0000;
+        background-color: black;
+    }
+
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
         background-color: #050505 !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
     }
@@ -38,7 +77,6 @@ def clear():
 
 def blink_ascii(sd):
     art = sd + """gx1gx1"""
-    # محاكاة الوميض في الويب عبر st.empty
     return art
 
 def print_green(msg):
@@ -90,7 +128,7 @@ def check_proxies_concurrently(proxy_list):
 
 expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
 
-# --- قائمة الأجهزة (50 جهاز كاملة كما هي) ---
+# قائمة الأجهزة كاملة
 devices = [
     {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
     {"reporter_id": "27568146", "device_id": "7008218736944907778"},
@@ -144,7 +182,6 @@ devices = [
     {"reporter_id": "7242379992225940494", "device_id": "7449373206865561103"}
 ]
 
-# --- قائمة الدول كاملة ---
 countries = ["SA", "US", "GB", "CA", "AU", "DE", "FR", "IT", "ES", "BR", "RU", "CN", "JP", "KR", "IN", "ID", "TR", "NL", "SE", "NO", "DK", "FI", "PL", "UA", "CZ", "RO", "HU", "GR", "PT", "BE", "CH", "AT", "IE", "SG", "MY", "TH", "VN", "PH", "MX", "AR", "CL", "CO", "PE", "ZA", "EG", "NG", "KE", "MA", "DZ", "AE"]
 
 def get_report_params(r_type, target_ID, session):
@@ -193,11 +230,16 @@ def get_target_id(username):
 
 # --- واجهة الإدخال والتشغيل ---
 
-st.image("https://files.catbox.moe/8z2xdh.jpg")
-st.code("✅ جميع المكتبات جاهزة للاستخدام!")
+# عرض الصورة داخل الإطار المرعب
+st.markdown('<div class="horror-frame">', unsafe_allow_html=True)
+st.image("https://files.catbox.moe/8z2xdh.jpg", use_container_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# طلب البيانات كما في main()
-st.subheader("⚙️ إعدادات الهجوم")
+# رابط تليجرام المخصص
+st.markdown(f"""<h2 style='text-align: center; color: #ff0000;'>رابط قناتي التليجرام: <a href='https://t.me/gx1gx1' style='color: #00ff00;'>gx1gx1</a></h2>""", unsafe_allow_html=True)
+st.code("علـش @GX1GX1")
+
+st.subheader(" إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
 report_menu = {
@@ -207,45 +249,37 @@ report_menu = {
     "10 - عنف": 10, "12 - بلاغات عشوائية": 12, "14 - احتيال": 14,
     "15 - تحديات خطيرة": 15, "16 - سبام": 16
 }
-selected_report = st.selectbox("⚖️ اختر نوع البلاغ:", list(report_menu.keys()))
+selected_report = st.selectbox("⚠ اختر نوع البلاغ:", list(report_menu.keys()))
 option = report_menu[selected_report]
 
-sessions_raw = st.text_area("🔑 ألصق السيزنات هنا:")
-proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري):")
+sessions_raw = st.text_area(" ألصق السيزنات هنا:")
+proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري):")
 
-if st.button("🔥 ابدأ الهجوم"):
+if st.button("بدأ الهــجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
         sessions = [s.strip() for s in sessions_raw.split('\n') if s.strip()]
-        
         target_id = get_target_id(username)
         if not target_id:
             st.error("❌ المستخدم غير موجود!")
         else:
             st.info("جار التحقق من السيزنات...")
             valid_sessions = [s for s in sessions if validate_session(s)]
-            
             if not valid_sessions:
                 st.error("لا توجد سيزنات صالحة!")
             else:
                 st.success(f"تم العثور على {len(valid_sessions)} سيزن صالح.")
-                
-                # منطقة النتائج
                 success_count = 0
                 fail_count = 0
                 terminal = st.empty()
-                
                 while True:
                     for session in valid_sessions:
                         curr_type = get_random_report_type() if option == 12 else option
                         url, head, data = get_report_params(curr_type, target_id, session)
-                        
                         if send_report(session, url, head, data):
                             success_count += 1
                         else:
                             fail_count += 1
-                            
                         terminal.code(f"Success: {success_count} | Failed: {fail_count}\nTarget: {target_id}")
                         time.sleep(2)
-
