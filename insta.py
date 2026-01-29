@@ -15,7 +15,7 @@ st.set_page_config(page_title="GX1 DARK PROTOCOL", page_icon="💀", layout="wid
 # CSS متقدم للخلفية المتحركة والإطار المرعب وحذف الهيدر
 st.markdown("""
     <style>
-    /* حذف شعارات Streamlit (GitHub, Menu, Footer) */
+    /* حذف شعارات Streamlit بالكامل */
     header {visibility: hidden;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -30,7 +30,7 @@ st.markdown("""
         font-family: 'Courier New', Courier, monospace;
     }
     
-    /* تأثير العناكب المتحركة (CSS Animation) */
+    /* أنيميشن العناكب */
     @keyframes move-spiders {
         from { background-position: 0 0; }
         to { background-position: 1000px 1000px; }
@@ -40,10 +40,10 @@ st.markdown("""
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
         background: url('https://upload.wikimedia.org/wikipedia/commons/d/d2/Red_Spider_Icon.png') repeat;
-        background-size: 50px;
-        opacity: 0.05;
+        background-size: 60px;
+        opacity: 0.07;
         z-index: -1;
-        animation: move-spiders 100s linear infinite;
+        animation: move-spiders 80s linear infinite;
     }
 
     /* إطار مرعب للصورة */
@@ -51,8 +51,9 @@ st.markdown("""
         border: 10px solid transparent;
         padding: 15px;
         border-image: url('https://img.freepik.com/free-vector/hand-drawn-gothic-frame-design_23-2149226164.jpg') 30 round;
-        box-shadow: 0 0 20px #ff0000;
+        box-shadow: 0 0 30px #ff0000;
         background-color: black;
+        text-align: center;
     }
 
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
@@ -63,7 +64,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- الكود الأصلي (بدون حذف حرف واحد) ---
+# --- الكود الأصلي (تم الحفاظ عليه بالكامل حرفياً) ---
 
 R = "\033[1;31m" # احمر
 G = "\033[1;32m" # اخضر
@@ -128,7 +129,7 @@ def check_proxies_concurrently(proxy_list):
 
 expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
 
-# قائمة الأجهزة كاملة
+# القائمة الكاملة (50 جهاز)
 devices = [
     {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
     {"reporter_id": "27568146", "device_id": "7008218736944907778"},
@@ -228,18 +229,18 @@ def get_target_id(username):
         return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
     except: return None
 
-# --- واجهة الإدخال والتشغيل ---
+# --- الواجهة (التصميم المطلوب) ---
 
-# عرض الصورة داخل الإطار المرعب
+# الصورة داخل الإطار المرعب
 st.markdown('<div class="horror-frame">', unsafe_allow_html=True)
-st.image("https://files.catbox.moe/8z2xdh.jpg", use_container_width=True)
+st.image("https://files.catbox.moe/8z2xdh.jpg", use_column_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # رابط تليجرام المخصص
-st.markdown(f"""<h2 style='text-align: center; color: #ff0000;'>رابط قناتي التليجرام: <a href='https://t.me/gx1gx1' style='color: #00ff00;'>gx1gx1</a></h2>""", unsafe_allow_html=True)
-st.code("علـش @GX1GX1")
+st.markdown(f"""<h2 style='text-align: center; color: #ff0000; margin-top:20px;'>رابط قناتي التليجرام: <a href='https://t.me/gx1gx1' target='_blank' style='color: #00ff00; text-decoration: none;'>gx1gx1</a></h2>""", unsafe_allow_html=True)
+st.code("علـش @GX1GX1", language="text")
 
-st.subheader(" إعدادات الهجوم")
+st.subheader("💀 إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
 report_menu = {
@@ -252,10 +253,10 @@ report_menu = {
 selected_report = st.selectbox("⚠ اختر نوع البلاغ:", list(report_menu.keys()))
 option = report_menu[selected_report]
 
-sessions_raw = st.text_area(" ألصق السيزنات هنا:")
-proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري):")
+sessions_raw = st.text_area("🔑 ألصق السيزنات هنا:")
+proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري):")
 
-if st.button("بدأ الهــجوم"):
+if st.button("🔥 بدأ الهــجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
