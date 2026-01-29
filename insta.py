@@ -253,7 +253,7 @@ selected_label = st.selectbox("👾 اختر نوع البلاغ:", list(menu_op
 option = menu_options[selected_label]
 
 sessions_raw = st.text_area(" ألصق السيزنات هنا (كل سطر سيزن):")
-proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري - gx1gx1.txt):")
+proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري ):")
 
 if st.button(" بدأ الهــجوم"):
     if not username or not sessions_raw:
