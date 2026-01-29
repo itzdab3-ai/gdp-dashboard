@@ -9,53 +9,13 @@ from os import path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from user_agent import generate_user_agent
 
-# --- إعداد واجهة التطبيق وحذف شعارات الاستضافة ---
+# --- إعداد واجهة التطبيق ---
 st.set_page_config(page_title="GX1 DARK PROTOCOL", page_icon="💀", layout="wide")
 
-# CSS متقدم للخلفية المتحركة والإطار المرعب وحذف الهيدر
+# تصميم الثيم الأسود والأحمر
 st.markdown("""
     <style>
-    /* حذف شعارات Streamlit بالكامل */
-    header {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display:none;}
-    
-    /* خلفية العناكب الحمراء المتحركة */
-    .stApp {
-        background-color: #000000;
-        background-image: url('https://www.transparenttextures.com/patterns/spider-web.png');
-        background-attachment: fixed;
-        color: #ff0000;
-        font-family: 'Courier New', Courier, monospace;
-    }
-    
-    /* أنيميشن العناكب */
-    @keyframes move-spiders {
-        from { background-position: 0 0; }
-        to { background-position: 1000px 1000px; }
-    }
-    .stApp::before {
-        content: "";
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: url('https://upload.wikimedia.org/wikipedia/commons/d/d2/Red_Spider_Icon.png') repeat;
-        background-size: 60px;
-        opacity: 0.07;
-        z-index: -1;
-        animation: move-spiders 80s linear infinite;
-    }
-
-    /* إطار مرعب للصورة */
-    .horror-frame {
-        border: 10px solid transparent;
-        padding: 15px;
-        border-image: url('https://img.freepik.com/free-vector/hand-drawn-gothic-frame-design_23-2149226164.jpg') 30 round;
-        box-shadow: 0 0 30px #ff0000;
-        background-color: black;
-        text-align: center;
-    }
-
+    .stApp { background-color: #000000; color: #ff0000; font-family: 'Courier New', Courier, monospace; }
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
         background-color: #050505 !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
     }
@@ -64,7 +24,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- الكود الأصلي (تم الحفاظ عليه بالكامل حرفياً) ---
+# --- الكود الأصلي (بدون حذف حرف واحد) ---
 
 R = "\033[1;31m" # احمر
 G = "\033[1;32m" # اخضر
@@ -78,6 +38,7 @@ def clear():
 
 def blink_ascii(sd):
     art = sd + """gx1gx1"""
+    # محاكاة الوميض في الويب عبر st.empty
     return art
 
 def print_green(msg):
@@ -129,7 +90,7 @@ def check_proxies_concurrently(proxy_list):
 
 expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
 
-# القائمة الكاملة (50 جهاز)
+# --- قائمة الأجهزة (50 جهاز كاملة كما هي) ---
 devices = [
     {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
     {"reporter_id": "27568146", "device_id": "7008218736944907778"},
@@ -183,6 +144,7 @@ devices = [
     {"reporter_id": "7242379992225940494", "device_id": "7449373206865561103"}
 ]
 
+# --- قائمة الدول كاملة ---
 countries = ["SA", "US", "GB", "CA", "AU", "DE", "FR", "IT", "ES", "BR", "RU", "CN", "JP", "KR", "IN", "ID", "TR", "NL", "SE", "NO", "DK", "FI", "PL", "UA", "CZ", "RO", "HU", "GR", "PT", "BE", "CH", "AT", "IE", "SG", "MY", "TH", "VN", "PH", "MX", "AR", "CL", "CO", "PE", "ZA", "EG", "NG", "KE", "MA", "DZ", "AE"]
 
 def get_report_params(r_type, target_ID, session):
@@ -229,18 +191,13 @@ def get_target_id(username):
         return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
     except: return None
 
-# --- الواجهة (التصميم المطلوب) ---
+# --- واجهة الإدخال والتشغيل ---
 
-# الصورة داخل الإطار المرعب
-st.markdown('<div class="horror-frame">', unsafe_allow_html=True)
-st.image("https://files.catbox.moe/8z2xdh.jpg", use_column_width=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.image("https://files.catbox.moe/8z2xdh.jpg")
+st.code("علـش @GX1GX1")
 
-# رابط تليجرام المخصص
-st.markdown(f"""<h2 style='text-align: center; color: #ff0000; margin-top:20px;'>رابط قناتي التليجرام: <a href='https://t.me/gx1gx1' target='_blank' style='color: #00ff00; text-decoration: none;'>gx1gx1</a></h2>""", unsafe_allow_html=True)
-st.code("علـش @GX1GX1", language="text")
-
-st.subheader("💀 إعدادات الهجوم")
+# طلب البيانات كما في main()
+st.subheader(" إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
 report_menu = {
@@ -253,34 +210,41 @@ report_menu = {
 selected_report = st.selectbox("⚠ اختر نوع البلاغ:", list(report_menu.keys()))
 option = report_menu[selected_report]
 
-sessions_raw = st.text_area("🔑 ألصق السيزنات هنا:")
-proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري):")
+sessions_raw = st.text_area(" ألصق السيزنات هنا:")
+proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري):")
 
-if st.button("🔥 بدأ الهــجوم"):
+if st.button("بدأ الهــجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
         sessions = [s.strip() for s in sessions_raw.split('\n') if s.strip()]
+        
         target_id = get_target_id(username)
         if not target_id:
             st.error("❌ المستخدم غير موجود!")
         else:
             st.info("جار التحقق من السيزنات...")
             valid_sessions = [s for s in sessions if validate_session(s)]
+            
             if not valid_sessions:
                 st.error("لا توجد سيزنات صالحة!")
             else:
                 st.success(f"تم العثور على {len(valid_sessions)} سيزن صالح.")
+                
+                # منطقة النتائج
                 success_count = 0
                 fail_count = 0
                 terminal = st.empty()
+                
                 while True:
                     for session in valid_sessions:
                         curr_type = get_random_report_type() if option == 12 else option
                         url, head, data = get_report_params(curr_type, target_id, session)
+                        
                         if send_report(session, url, head, data):
                             success_count += 1
                         else:
                             fail_count += 1
+                            
                         terminal.code(f"Success: {success_count} | Failed: {fail_count}\nTarget: {target_id}")
                         time.sleep(2)
