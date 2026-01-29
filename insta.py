@@ -11,7 +11,11 @@ required_packages = [
 
 # دالة لتثبيت مكتبة واحدة
 def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    # تم إضافة محاولة (try) هنا لمنع الكود من التوقف إذا كان السيرفر يمنع التثبيت اليدوي
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    except Exception:
+        pass 
 
 # محاولة تثبيت كل مكتبة إن لم تكن موجودة
 for pkg in required_packages:
@@ -53,7 +57,7 @@ def clear():
 # --- الواجهة المخيفة الجديدة ---
 def scary_interface():
     clear()
-    # عرض الصورة المطلوبة مع إطار
+    # عرض الصورة المطلوبة مع إطار مميز
     print(f"{R}╔════════════════════════════════════════════════════════════════╗")
     print(f"{R}║ {C}IMAGE LINK: https://files.catbox.moe/8z2xdh.jpg {R}║")
     print(f"{R}╚════════════════════════════════════════════════════════════════╝")
@@ -220,16 +224,11 @@ countries = [
 
 def get_report_params(r_type, target_ID, session):
     base_url = 'https://www.tiktok.com/aweme/v1/aweme/feedback/'
-    
-    # اختيار جهاز عشوائي
     device = random.choice(devices)
-    
-    # اختيار دولة عشوائية
     country = random.choice(countries)
     region = country
     priority_region = country
     current_region = country
-    
     common = (f"?aid=1233&app_name=tiktok_web&device_platform=web_mobile"
               f"&region={region}&priority_region={priority_region}&os=ios&"
               f"cookie_enabled=true&screen_width=375&screen_height=667&"
@@ -238,56 +237,31 @@ def get_report_params(r_type, target_ID, session):
               f"AppleWebKit/605.1.15+(KHTML,+like+Gecko)+InspectBrowser&"
               f"browser_online=true&app_language=ar&timezone_name=Asia%2FRiyadh&"
               f"is_page_visible=true&focus_state=true&is_fullscreen=false")
-
     params = {  
-        1: {"reason": "399"},  
-        2: {"reason": "310"},  
-        3: {"reason": "317"},  
-        4: {"reason": "3142"},  
-        5: {"reason": "306"},  
-        6: {"reason": "308"},  
-        7: {"reason": "3011"},  
-        8: {"reason": "3052"},  
-        9: {"reason": "3072"},  
-        10: {"reason": "303"},  
-        14: {"reason": "9004"},  
-        15: {"reason": "90064"},  
+        1: {"reason": "399"}, 2: {"reason": "310"}, 3: {"reason": "317"},  
+        4: {"reason": "3142"}, 5: {"reason": "306"}, 6: {"reason": "308"},  
+        7: {"reason": "3011"}, 8: {"reason": "3052"}, 9: {"reason": "3072"},  
+        10: {"reason": "303"}, 14: {"reason": "9004"}, 15: {"reason": "90064"},  
         16: {"reason": "9010"}  
     }  
-    
     p = params.get(r_type)  
     url = (f"{base_url}{common}&history_len=14&reason={p['reason']}&report_type=user"  
            f"&object_id={target_ID}&owner_id={target_ID}&target={target_ID}"  
            f"&reporter_id={device['reporter_id']}&current_region={current_region}")  
-    
     rep_headers = {  
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',  
-        'Accept-Encoding': 'gzip, deflate, br',  
-        'Accept-Language': 'en-US,en;q=0.5',  
-        'Connection': 'keep-alive',  
-        'Cookie': 'sessionid=' + session,  
-        'Host': 'www.tiktok.com',  
-        'Sec-Fetch-Dest': 'document',  
-        'Sec-Fetch-Mode': 'navigate',  
-        'Sec-Fetch-Site': 'none',  
-        'Sec-Fetch-User': '?1',  
-        'Upgrade-Insecure-Requests': '1',  
-        'User-Agent': generate_user_agent()  
+        'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'en-US,en;q=0.5',  
+        'Connection': 'keep-alive', 'Cookie': 'sessionid=' + session, 'Host': 'www.tiktok.com',  
+        'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Site': 'none',  
+        'Sec-Fetch-User': '?1', 'Upgrade-Insecure-Requests': '1', 'User-Agent': generate_user_agent()  
     }  
-    
-    data = {  
-        "object_id": target_ID,  
-        "owner_id": target_ID,  
-        "report_type": "user",  
-        "target": target_ID  
-    }  
-    
+    data = {"object_id": target_ID, "owner_id": target_ID, "report_type": "user", "target": target_ID}  
     return url, rep_headers, data
 
 def send_report(session, report_url, headers, data, proxies=None):
     try:
         rep = requests.post(report_url, headers=headers, data=data, proxies=proxies, timeout=10)
-        return expected_response not in rep.text
+        return expected_response in rep.text
     except Exception:
         return False
 
@@ -295,174 +269,75 @@ def get_random_report_type():
     return random.choice([1,2,3,4,5,6,7,8,9,10,14,15,16])
 
 def validate_session(session):
-    check_url = ('https://api16-normal-c-alisg.tiktokv.com/passport/account/info/v2/'
-                 '?scene=normal&multi_login=1&account_sdk_source=app&passport-sdk-version=19&'
-                 'os_api=25&device_type=A5010& ss_mix=a&manifest_version_code=2018093009&dpi=191&'
-                 'carrier_region=JO&uoo=1&region=US&app_name=musical_ly&version_name=7.1.2&'
-                 'timezone_offset=28800&ts=1628767214&ab_version=7.1.2&residence=SA&'
-                 'cpu_support64=false&current_region=JO&ac2=wifi&ac=wifi&app_type=normal&'
-                 'host_abi=armeabi-v7a&channel=googleplay&update_version_code=2018093009&'
-                 '_rticket=1628767221573&device_platform=android&iid=7396386396296286392&'
-                 'build_number=7.1.2&locale=en&op_region=SA&version_code=200705&'
-                 'timezone_name=Asia%2FShanghai&cdid=f61ca549-c9ee-450b-90da-8854423b74e7&'
-                 'openudid=3e5afbd3f6dde322&sys_region=US&device_id=7296396296396396393&'
-                 'app_language=en&resolution=576*1024&device_brand=OnePlus&language=en&'
-                 'os_version=7.1.2&aid=1233&mcc_mnc=2947')
-
-    headers = {  
-        'Host': 'api16-normal-c-alisg.tiktokv.com',  
-        'Accept-Encoding': 'gzip, deflate',  
-        'User-Agent': generate_user_agent(),  
-        'Cookie': 'sessionid=' + session  
-    }  
-    
+    check_url = ('https://api16-normal-c-alisg.tiktokv.com/passport/account/info/v2/?scene=normal&aid=1233')
+    headers = {'Host': 'api16-normal-c-alisg.tiktokv.com', 'User-Agent': generate_user_agent(), 'Cookie': 'sessionid=' + session}  
     try:  
         resp = requests.get(check_url, headers=headers, timeout=5)  
-        if '"session expired, please sign in again"' in resp.text:  
-            return False  
-        return 'user_id' in resp.text  
+        return 'user_id' in resp.text and '"session expired' not in resp.text
     except Exception:  
         return False
 
 def get_target_id(username):
-    headers = {
-        'Host': 'www.tiktok.com',
-        'User-Agent': generate_user_agent(),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,/;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.7',
-        'Accept-Encoding': 'gzip, deflate',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Te': 'trailers',
-        'Connection': 'close',
-    }
-
+    headers = {'Host': 'www.tiktok.com', 'User-Agent': generate_user_agent()}
     try:  
         req = requests.get(f'https://www.tiktok.com/@{username}?lang=en', headers=headers)  
         return re.findall(r'"user":{"id":"(.*?)"', req.text)[0]  
-    except:  
-        return None
+    except: return None
 
 def main():
     display_banner()
-
     while True:  
         show_menu()  
         try:  
-            print(B+"اختر رقم البلاغ                                 " )  
             option = input(Y+"Select Report Type ➥ ")  
-            if option == "0":  
-                print_red("Exiting tool...")  
-                sys.exit(0)  
-            elif option in ["1","2","3","4","5","6","7","8","9","10","12","13","14","15","16"]:  
-                option = int(option)  
-                break  
-            else:  
-                print_red("Invalid option! Please try again.")  
-        except ValueError:  
-            print_red("Please enter a valid number!")  
+            if option == "0": sys.exit(0)
+            if option in [str(i) for i in [1,2,3,4,5,6,7,8,9,10,12,13,14,15,16]]:
+                option = int(option); break
+            else: print_red("Invalid option!")  
+        except ValueError: print_red("Enter a number!")  
     
     random_mode = option in [12, 13]  
     proxy_mode = True    
     
     sessions = []  
-    print(B+'\n[!] لصق السيزنات الآن (أدخل السيزنات ثم اكتب "done" في سطر جديد للانتقال للخطوة التالية):')  
+    print(B+'\n[!] لصق السيزنات الآن (أدخل السيزنات ثم اكتب "done" في سطر جديد):')  
     while True:
-        line = input(C + "➤ ")
-        if line.lower() == 'done':
-            break
-        if line.strip():
-            sessions.append(line.strip())
+        line = input(C + "➤ "); 
+        if line.lower() == 'done': break
+        if line.strip(): sessions.append(line.strip())
     
-    if not sessions:
-        print_red("لم يتم إدخال أي سيزن!")
-        sys.exit(1)
-
-    print_white("جار التحـقق...")  
+    if not sessions: sys.exit(1)
+    print_white("Checking...")  
     valid_sessions = [s for s in sessions if validate_session(s)]  
-    
-    if not valid_sessions:  
-        print_red("No valid sessions found!")  
-        sys.exit(1)  
-    
-    print_green(f"{len(valid_sessions)} valid sessions")  
+    if not valid_sessions: print_red("No valid sessions!"); sys.exit(1)
     
     working_proxies = []  
     if proxy_mode:  
-        print(B+'\n[!] لصق البركسيات الآن (أدخل البركسيات ثم اكتب "done" في سطر جديد للبدء):')  
+        print(B+'\n[!] لصق البركسيات الآن (أدخل البركسيات ثم اكتب "done" في سطر جديد):')  
         proxy_list = []
         while True:
-            line = input(C + "Proxy ➤ ")
-            if line.lower() == 'done':
-                break
-            if line.strip():
-                proxy_list.append(line.strip())
-        
-        if proxy_list:
-            print_white(f"Checking {len(proxy_list)} proxies...")  
-            working_proxies = check_proxies_concurrently(proxy_list)  
-            
-            if not working_proxies:  
-                print_red("No working proxies found!")  
-                sys.exit(1)  
-            
-            print_green(f"{len(working_proxies)} working proxies found")  
-        else:  
-            print_red("لم يتم إدخال بركسيات!")  
-            sys.exit(1)  
+            line = input(C + "Proxy ➤ "); 
+            if line.lower() == 'done': break
+            if line.strip(): proxy_list.append(line.strip())
+        if proxy_list: working_proxies = check_proxies_concurrently(proxy_list)
     
-    print(B+'يـوزر الضحـية                  ')  
     username = input(Y+"Enter target username ➥ ")  
     target_id = get_target_id(username)  
+    if not target_id: print_red("Not found!"); sys.exit(1)
     
-    if not target_id:  
-        print_red("User not found or banned!")  
-        sys.exit(1)  
-    
-    try:  
-        delay = int(("2"))  
-    except ValueError:  
-        print_white("Using default delay of 5 seconds")  
-        delay = 5  
-    
-    continuous = ("y").lower() == 'y'  
-    
-    successful = 0  
-    failed = 0  
-    
+    successful, failed = 0, 0
     try:  
         while True:  
             for session in valid_sessions:  
                 current_type = get_random_report_type() if random_mode else option  
                 url, headers, data = get_report_params(current_type, target_id, session)  
-                
-                proxies = None  
-                if proxy_mode and working_proxies:  
-                    proxy = random.choice(working_proxies)  
-                    proxies = {"http": proxy, "https": proxy}  
-                
-                if send_report(session, url, headers, data, proxies):  
-                    successful += 1  
-                else:  
-                    failed += 1  
-                
-                sys.stdout.write(f"\r\033[1;32mSuccess: {successful}\033[0m | \033[1;31mFailed: {failed}\033[0m")  
-                sys.stdout.flush()  
-                
-                time.sleep(delay)  
-            
-            if not continuous:  
-                break  
-    
-    except KeyboardInterrupt:  
-        print_red("\nReporting stopped by user")  
-    
-    print_white(f"\nFinal Results:")  
-    print_green(f"Successful Reports: {successful}")  
-    print_red(f"Failed Reports: {failed}")
+                proxies = {"http": random.choice(working_proxies), "https": random.choice(working_proxies)} if working_proxies else None
+                if send_report(session, url, headers, data, proxies): successful += 1
+                else: failed += 1
+                sys.stdout.write(f"\r{G}Success: {successful}{rest} | {R}Failed: {failed}{rest}")
+                sys.stdout.flush(); time.sleep(2)
+    except KeyboardInterrupt: print_red("\nStopped")
 
 if __name__ == "__main__":
     main()
+
