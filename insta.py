@@ -194,10 +194,10 @@ def get_target_id(username):
 # --- واجهة الإدخال والتشغيل ---
 
 st.image("https://files.catbox.moe/8z2xdh.jpg")
-st.code("علـش @GX1GX1")
+st.code("✅ جميع المكتبات جاهزة للاستخدام!")
 
 # طلب البيانات كما في main()
-st.subheader(" إعدادات الهجوم")
+st.subheader("⚙️ إعدادات الهجوم")
 username = st.text_input("👤 يوزر الضحية (Target Username):")
 
 report_menu = {
@@ -207,13 +207,13 @@ report_menu = {
     "10 - عنف": 10, "12 - بلاغات عشوائية": 12, "14 - احتيال": 14,
     "15 - تحديات خطيرة": 15, "16 - سبام": 16
 }
-selected_report = st.selectbox("⚠ اختر نوع البلاغ:", list(report_menu.keys()))
+selected_report = st.selectbox("⚖️ اختر نوع البلاغ:", list(report_menu.keys()))
 option = report_menu[selected_report]
 
-sessions_raw = st.text_area(" ألصق السيزنات هنا:")
-proxy_raw = st.text_area(" ألصق البروكسيات هنا (اختياري):")
+sessions_raw = st.text_area("🔑 ألصق السيزنات هنا:")
+proxy_raw = st.text_area("🌐 ألصق البروكسيات هنا (اختياري):")
 
-if st.button("بدأ الهــجوم"):
+if st.button("🔥 ابدأ الهجوم"):
     if not username or not sessions_raw:
         st.error("❌ أدخل اليوزر والسيزنات!")
     else:
@@ -248,3 +248,4 @@ if st.button("بدأ الهــجوم"):
                             
                         terminal.code(f"Success: {success_count} | Failed: {fail_count}\nTarget: {target_id}")
                         time.sleep(2)
+
