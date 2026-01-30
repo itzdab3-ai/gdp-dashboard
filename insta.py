@@ -43,7 +43,7 @@ def get_target_id(username):
 # --- واجهة Streamlit التنفيذية ---
 
 st.markdown('<div class="horror-border">', unsafe_allow_html=True)
-st.image("https://i.postimg.cc/yN6S5prM/IMG-20260129-173427.png", use_column_width=True)
+st.image("https://files.catbox.moe/8z2xdh.jpg", use_column_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("<h2 style='text-align: center; color: #ff0000;'>قناتي تليجرام: <a href='https://t.me/gx1gx1' style='color: #00ff00;'>gx1gx1</a></h2>", unsafe_allow_html=True)
@@ -104,3 +104,4 @@ if st.button(" بدأ الهــجوم"):
                         
                         terminal.code(f"⚡ [GX1 DARK PROTOCOL RUNNING]\nSUCCESS: {success_count} | FAILED: {fail_count}\nTARGET_ID: {target_id}")
                         time.sleep(2)
+
